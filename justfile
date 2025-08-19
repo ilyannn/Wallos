@@ -67,6 +67,19 @@ superlint:
     @echo "Running Superlinter on Wallos codebase..."
     docker run --rm \
         -e RUN_LOCAL=true \
+        -e VALIDATE_ALL_CODEBASE=true \
+        -e VALIDATE_CSS=true \
+        -e VALIDATE_JAVASCRIPT_ES=true \
+        -e VALIDATE_PHP_BUILTIN=true \
+        -e VALIDATE_YAML=true \
+        -e VALIDATE_JSON=true \
+        -e VALIDATE_MARKDOWN=true \
+        -e VALIDATE_BASH=true \
+        -e VALIDATE_DOCKERFILE_HADOLINT=true \
+        -e VALIDATE_JSCPD=false \
+        -e VALIDATE_PHP_PHPCS=false \
+        -e VALIDATE_PHP_PHPSTAN=false \
+        -e VALIDATE_PHP_PSALM=false \
         -v $(pwd):/tmp/lint \
         -w /tmp/lint \
         github/super-linter:latest
@@ -126,3 +139,26 @@ dev-clean:
     docker compose -f docker-compose.yaml -f docker-compose.dev.yaml down -v
     docker system prune -f
     @echo "Development environment cleaned. Run 'just dev' to restart."
+
+# Test GitHub Actions superlint workflow locally (simulates PR)
+superlint-github:
+    @echo "Running Superlinter with GitHub Actions configuration (PR mode)..."
+    docker run --rm \
+        -e RUN_LOCAL=true \
+        -e VALIDATE_ALL_CODEBASE=false \
+        -e DEFAULT_BRANCH=main \
+        -e VALIDATE_CSS=true \
+        -e VALIDATE_JAVASCRIPT_ES=true \
+        -e VALIDATE_PHP_BUILTIN=true \
+        -e VALIDATE_YAML=true \
+        -e VALIDATE_JSON=true \
+        -e VALIDATE_MARKDOWN=true \
+        -e VALIDATE_BASH=true \
+        -e VALIDATE_DOCKERFILE_HADOLINT=true \
+        -e VALIDATE_JSCPD=false \
+        -e VALIDATE_PHP_PHPCS=false \
+        -e VALIDATE_PHP_PHPSTAN=false \
+        -e VALIDATE_PHP_PSALM=false \
+        -v $(pwd):/tmp/lint \
+        -w /tmp/lint \
+        github/super-linter:v5

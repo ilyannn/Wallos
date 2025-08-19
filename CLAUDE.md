@@ -89,10 +89,31 @@ The application uses SQLite with these key tables:
 - `migrations` - Database version tracking
 
 ## Testing and Quality
-- Use `just superlint` to run comprehensive linting
-- Covers PHP, CSS, JavaScript, HTML, YAML, JSON, Markdown
+- Use `just superlint` to run comprehensive linting on entire codebase
+- Use `just superlint-pr` to run fast linting on only PR changes  
+- Use `just superlint-github` to test GitHub Actions linting configuration locally
+- Automated linting via GitHub Actions on all PRs and main branch pushes
 - No automated test suite - manual testing required
 - Demo environment available at demo.wallosapp.com
+
+### Linting Strategy
+**Enabled Linters (Essential Quality Checks):**
+- ✅ **VALIDATE_PHP_BUILTIN** - Catches syntax errors and fatal issues that prevent code execution
+- ✅ **VALIDATE_CSS** - CSS syntax and basic style validation  
+- ✅ **VALIDATE_JAVASCRIPT_ES** - JavaScript syntax and ES standards compliance
+- ✅ **VALIDATE_YAML** - YAML syntax validation for Docker configs
+- ✅ **VALIDATE_JSON** - JSON syntax validation for manifests and configs
+- ✅ **VALIDATE_MARKDOWN** - Documentation quality and formatting
+- ✅ **VALIDATE_BASH** - Shell script syntax validation
+- ✅ **VALIDATE_DOCKERFILE_HADOLINT** - Dockerfile best practices
+
+**Disabled Linters (Too Strict for Legacy Codebase):**
+- ❌ **VALIDATE_PHP_PHPCS** - Coding standards (would require massive formatting changes)
+- ❌ **VALIDATE_PHP_PHPSTAN** - Static analysis requiring type hints (legacy code uses dynamic patterns)
+- ❌ **VALIDATE_PHP_PSALM** - Strict type safety (incompatible with SQLite result handling patterns)
+- ❌ **VALIDATE_JSCPD** - Duplicate code detection (legacy codebase has acceptable duplication)
+
+**Philosophy**: Focus on **functionality and security** over **style preferences**. Catch real bugs and syntax errors while avoiding bikeshedding on formatting in a working legacy codebase.
 
 ## Deployment
 - Primarily Docker-based deployment via `docker-compose.yaml`
