@@ -81,17 +81,11 @@ superlint-pr:
     @echo "Running Superlinter on PR changes only..."
     @echo "Detecting changed files since main branch..."
     @git diff --name-only origin/main...HEAD
-    @echo "Creating temporary directory with only changed files..."
-    @mkdir -p /tmp/wallos-pr-lint
-    @git diff --name-only origin/main...HEAD | while read file; do \
-        if [ -f "$$file" ]; then \
-            mkdir -p "/tmp/wallos-pr-lint/$$(dirname "$$file")" 2>/dev/null || true; \
-            cp "$$file" "/tmp/wallos-pr-lint/$$file"; \
-        fi \
-    done
-    @echo "Running Super-Linter on changed files only..."
+    @echo "Running Super-Linter with file filtering..."
     docker run --rm \
         -e RUN_LOCAL=true \
+        -e VALIDATE_ALL_CODEBASE=false \
+        -e DEFAULT_BRANCH=main \
         -e VALIDATE_JSCPD=false \
         -e VALIDATE_PHP_PHPCS=false \
         -e VALIDATE_PHP_PHPSTAN=false \
@@ -99,11 +93,9 @@ superlint-pr:
         -e VALIDATE_CSS=false \
         -e VALIDATE_JAVASCRIPT_STANDARD=false \
         -e VALIDATE_NATURAL_LANGUAGE=false \
-        -v /tmp/wallos-pr-lint:/tmp/lint \
+        -v $(pwd):/tmp/lint \
         -w /tmp/lint \
         github/super-linter:latest
-    @echo "Cleaning up temporary directory..."
-    @rm -rf /tmp/wallos-pr-lint
 
 # Clean up Docker resources
 clean:
