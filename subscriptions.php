@@ -151,7 +151,9 @@ foreach ($subscriptions as $subscription) {
   $paymentMethodId = $subscription['payment_method_id'];
   $payment_methods[$paymentMethodId]['count']++;
   $currencyId = $subscription['currency_id'];
-  $currencies[$currencyId]['count']++;
+  if (isset($currencies[$currencyId])) {
+    $currencies[$currencyId]['count']++;
+  }
 }
 
 if ($sortOrder == "category_id") {
@@ -324,11 +326,11 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
           $print[$id]['price'] = getPricePerMonth($cycle, $frequency, $mainPrice);
           break;
       }
-      $print[$id]['currency_code'] = $mainCurrencyId !== null ? $currencies[$mainCurrencyId]['code'] : $currencies[$currencyId]['code'];
+      $print[$id]['currency_code'] = $mainCurrencyId !== null && isset($currencies[$mainCurrencyId]) ? $currencies[$mainCurrencyId]['code'] : (isset($currencies[$currencyId]) ? $currencies[$currencyId]['code'] : '');
       
       // Store original price and currency in original billing cycle for comparison
       $print[$id]['original_price'] = floatval($subscription['price']);
-      $print[$id]['original_currency_code'] = $currencies[$subscription['currency_id']]['code'];
+      $print[$id]['original_currency_code'] = isset($currencies[$subscription['currency_id']]) ? $currencies[$subscription['currency_id']]['code'] : '';
       $print[$id]['original_cycle'] = $cycle;
       $print[$id]['original_frequency'] = $frequency;
       $print[$id]['display_period'] = $period;
