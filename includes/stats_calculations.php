@@ -1,5 +1,7 @@
 <?php
 
+require_once 'currency_formatter.php';
+
 function getPricePerMonth($cycle, $frequency, $price)
 {
     switch ($cycle) {
@@ -273,7 +275,7 @@ $totalMonthlyCostDataPoints = [];
 while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
     $totalMonthlyCostDataPoints[] = [
         "label" => html_entity_decode($row['date']),
-        "y" => round($row['cost'] / 12, 2),
+        "y" => round($row['cost'] / 12, DECIMALS_CURRENCY),
     ];
 }
 

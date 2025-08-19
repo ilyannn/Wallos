@@ -1,6 +1,7 @@
 <?php
 
 require_once 'i18n/getlang.php';
+require_once 'currency_formatter.php';
 
 function getBillingCycle($cycle, $frequency, $i18n)
 {
@@ -341,7 +342,7 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
                         <span class="value">
                             <?php
                             // Round to nearest whole number for yearly view, show cents for others
-                            $decimals = (isset($subscription['display_period']) && $subscription['display_period'] === 'year') ? 0 : 2;
+                            $decimals = (isset($subscription['display_period']) && $subscription['display_period'] === 'year') ? DECIMALS_WHOLE : DECIMALS_CURRENCY;
                             echo number_format($subscription['price'], $decimals);
                             ?>
                         </span>

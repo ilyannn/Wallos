@@ -1,8 +1,10 @@
+const DEFAULT_PERIOD = 'month';
+
 let isSortOptionsOpen = false;
 let isPeriodOptionsOpen = false;
 let scrollTopBeforeOpening = 0;
 const shouldScroll = window.innerWidth <= 768;
-let currentPeriod = 'month';
+let currentPeriod = DEFAULT_PERIOD;
 
 function toggleOpenSubscription(subId) {
   const subscriptionElement = document.querySelector('.subscription[data-id="' + subId + '"]');
@@ -381,7 +383,7 @@ function fetchSubscriptions(id, event, initiator) {
   
   // Always pass the current period parameter
   const urlParams = new URLSearchParams(window.location.search);
-  const period = urlParams.get('period') || 'month';
+  const period = urlParams.get('period') || DEFAULT_PERIOD;
   getSubscriptions += getSubscriptions.includes("?") ? `&period=${period}` : `?period=${period}`;
 
   fetch(getSubscriptions)
@@ -928,7 +930,7 @@ window.addEventListener('load', () => {
   
   // Set current period from URL parameter
   const urlParams = new URLSearchParams(window.location.search);
-  const period = urlParams.get('period') || 'month';
+  const period = urlParams.get('period') || DEFAULT_PERIOD;
   currentPeriod = period;
   
   // Update button text

@@ -1,5 +1,6 @@
 <?php
 require_once 'includes/header.php';
+require_once 'includes/currency_formatter.php';
 
 
 // Get code of main currency to display on statistics
@@ -188,7 +189,7 @@ require_once 'includes/stats_calculations.php';
     if (isset($budgetUsed)) {
       ?>
       <div class="statistic">
-        <span><?= number_format($budgetUsed, 2) ?>%</span>
+        <span><?= number_format($budgetUsed, DECIMALS_CURRENCY) ?>%</span>
         <div class="title"><?= translate('percentage_budget_used', $i18n) ?></div>
       </div>
       <?php

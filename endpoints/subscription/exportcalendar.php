@@ -1,6 +1,7 @@
 <?php
 require_once '../../includes/connect_endpoint.php';
 require_once '../../includes/getdbkeys.php';
+require_once '../../includes/currency_formatter.php';
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     die(json_encode([
@@ -35,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $subscription['payment_method'] = $payment_methods[$subscription['payment_method_id']]['name'];
         $subscription['currency'] = $currencies[$subscription['currency_id']]['symbol'];
         $subscription['trigger'] = $subscription['notify_days_before'] ? $subscription['notify_days_before'] : 1;
-        $subscription['price'] = number_format($subscription['price'], 2);
+        $subscription['price'] = number_format($subscription['price'], DECIMALS_CURRENCY);
 
        // Create ICS from subscription information
         $uid = uniqid();
