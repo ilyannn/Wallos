@@ -11,7 +11,9 @@ services:
       - './styles:/var/www/html/styles'
       - './api:/var/www/html/api'
       - './images:/var/www/html/images'
-      # Mount main PHP files individually
+      - './libs:/var/www/html/libs'
+      - './migrations:/var/www/html/migrations'
+      # Mount all PHP files (more comprehensive and less error-prone)
       - './subscriptions.php:/var/www/html/subscriptions.php'
       - './index.php:/var/www/html/index.php'
       - './profile.php:/var/www/html/profile.php'
@@ -20,6 +22,18 @@ services:
       - './calendar.php:/var/www/html/calendar.php'
       - './admin.php:/var/www/html/admin.php'
       - './about.php:/var/www/html/about.php'
+      - './login.php:/var/www/html/login.php'
+      - './logout.php:/var/www/html/logout.php'
+      - './registration.php:/var/www/html/registration.php'
+      - './passwordreset.php:/var/www/html/passwordreset.php'
+      - './totp.php:/var/www/html/totp.php'
+      - './verifyemail.php:/var/www/html/verifyemail.php'
+      - './logos.php:/var/www/html/logos.php'
+      # Configuration files
+      - './manifest.json:/var/www/html/manifest.json'
+      - './service-worker.js:/var/www/html/service-worker.js'
+      - './nginx.conf:/var/www/html/nginx.conf'
+      - './nginx.default.conf:/var/www/html/nginx.default.conf'
     environment:
       TZ: 'America/Toronto'
       PHP_ENV: 'development'

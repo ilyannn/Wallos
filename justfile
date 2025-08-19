@@ -23,7 +23,14 @@ start:
 # Start development mode with bind mounts (no rebuild needed)
 dev:
     @echo "Starting Wallos in development mode with bind mounts..."
+    @echo "Ensuring clean state..."
+    docker compose -f docker-compose.yaml -f docker-compose.dev.yaml down 2>/dev/null || true
+    @echo "Checking file permissions..."
+    @chmod -R 755 includes endpoints scripts styles api images libs migrations 2>/dev/null || true
+    @chmod 644 *.php *.js *.json 2>/dev/null || true
+    @echo "Starting development containers..."
     docker compose -f docker-compose.yaml -f docker-compose.dev.yaml up -d
+    @echo "Development mode started! Use 'just logs' to view output."
 
 # Stop the Docker services
 stop:
@@ -76,3 +83,24 @@ rebuild: build stop start
 # Full reset: stop, clean, rebuild, and start
 reset: stop clean build start
     @echo "Full reset completed!"
+
+# Troubleshoot development mode issues
+dev-debug:
+    @echo "=== Development Mode Troubleshooting ==="
+    @echo "1. Checking file existence:"
+    @ls -la *.php | head -5
+    @echo "2. Checking directory permissions:"
+    @ls -ld includes endpoints scripts styles | head -4
+    @echo "3. Checking Docker containers:"
+    docker compose -f docker-compose.yaml -f docker-compose.dev.yaml ps
+    @echo "4. Checking Docker volumes:"
+    docker compose -f docker-compose.yaml -f docker-compose.dev.yaml config --volumes
+    @echo "5. Recent container logs:"
+    docker compose -f docker-compose.yaml -f docker-compose.dev.yaml logs --tail=10
+
+# Clean development environment (fixes mount issues)
+dev-clean:
+    @echo "Cleaning development environment..."
+    docker compose -f docker-compose.yaml -f docker-compose.dev.yaml down -v
+    docker system prune -f
+    @echo "Development environment cleaned. Run 'just dev' to restart."
