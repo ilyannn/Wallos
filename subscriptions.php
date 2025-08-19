@@ -241,13 +241,13 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
         </button>
         <div class="period-options" id="period-options">
           <div class="period-option" data-period="week" onClick="setPeriod('week')">
-            <span>Week</span>
+            <span><?= getBillingCycle(2, 1, $i18n) ?></span>
           </div>
           <div class="period-option" data-period="month" onClick="setPeriod('month')">
-            <span>Month</span>
+            <span><?= getBillingCycle(3, 1, $i18n) ?></span>
           </div>
           <div class="period-option" data-period="year" onClick="setPeriod('year')">
-            <span>Year</span>
+            <span><?= getBillingCycle(4, 1, $i18n) ?></span>
           </div>
         </div>
       </div>

@@ -52,18 +52,24 @@ function getSubscriptionProgress($cycle, $frequency, $next_payment)
 }
 
 
-function getCycleShortNotation($cycle, $frequency)
+function getCycleFirstLetter($cycle, $i18n)
 {
     switch ($cycle) {
         case 1:
-            return $frequency == 1 ? 'd' : $frequency . 'd';
+            return mb_substr(translate('Daily', $i18n), 0, 1, 'UTF-8');
         case 2:
-            return $frequency == 1 ? 'w' : $frequency . 'w';
+            return mb_substr(translate('Weekly', $i18n), 0, 1, 'UTF-8');
         case 3:
-            return $frequency == 1 ? 'm' : $frequency . 'm';
+            return mb_substr(translate('Monthly', $i18n), 0, 1, 'UTF-8');
         case 4:
-            return $frequency == 1 ? 'y' : $frequency . 'y';
+            return mb_substr(translate('Yearly', $i18n), 0, 1, 'UTF-8');
     }
+}
+
+function getCycleShortNotation($cycle, $frequency, $i18n)
+{
+    $letter = getCycleFirstLetter($cycle, $i18n);
+    return $frequency == 1 ? $letter : $frequency . $letter;
 }
 
 
@@ -249,8 +255,20 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
                         <?php
                         // Show original price with cycle when different from selected period
                         if (isset($subscription['original_price']) && isset($subscription['display_period'])) {
-                            $originalCycleNotation = getCycleShortNotation($subscription['original_cycle'], $subscription['original_frequency']);
-                            $selectedPeriodShort = substr($subscription['display_period'], 0, 1); // w, m, y
+                            $originalCycleNotation = getCycleShortNotation($subscription['original_cycle'], $subscription['original_frequency'], $i18n);
+                            // Convert display_period to localized first letter
+                            $selectedPeriodShort = '';
+                            switch ($subscription['display_period']) {
+                                case 'week':
+                                    $selectedPeriodShort = getCycleFirstLetter(2, $i18n);
+                                    break;
+                                case 'month':
+                                    $selectedPeriodShort = getCycleFirstLetter(3, $i18n);
+                                    break;
+                                case 'year':
+                                    $selectedPeriodShort = getCycleFirstLetter(4, $i18n);
+                                    break;
+                            }
                             
                             // Show original price and cycle if currency differs OR billing cycle differs from selected period
                             if ($subscription['original_currency_code'] != $subscription['currency_code'] || 
