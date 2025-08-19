@@ -71,6 +71,19 @@ superlint:
         -w /tmp/lint \
         github/super-linter:latest
 
+# Run Superlinter only on PR changes (much faster)
+superlint-pr:
+    @echo "Running Superlinter on PR changes only..."
+    @echo "Detecting changed files since main branch..."
+    @git diff --name-only origin/main...HEAD | head -10
+    docker run --rm \
+        -e RUN_LOCAL=true \
+        -e VALIDATE_ALL_CODEBASE=false \
+        -e DEFAULT_BRANCH=main \
+        -v $(pwd):/tmp/lint \
+        -w /tmp/lint \
+        github/super-linter:latest
+
 # Clean up Docker resources
 clean:
     @echo "Removing local image {{ image_tag }}..."
