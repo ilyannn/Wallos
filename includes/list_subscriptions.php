@@ -1,6 +1,7 @@
 <?php
 
 require_once 'i18n/getlang.php';
+require_once 'price_calculations.php';
 
 // Decimal formatting constants
 const DECIMALS_WHOLE = 0;      // For whole numbers (yearly view)
@@ -50,61 +51,6 @@ function getSubscriptionProgress($cycle, $frequency, $next_payment)
     return floor($subscriptionProgress);
 }
 
-function getPricePerMonth($cycle, $frequency, $price)
-{
-    switch ($cycle) {
-        case 1:
-            $numberOfPaymentsPerMonth = (30 / $frequency);
-            return $price * $numberOfPaymentsPerMonth;
-        case 2:
-            $numberOfPaymentsPerMonth = (4.35 / $frequency);
-            return $price * $numberOfPaymentsPerMonth;
-        case 3:
-            $numberOfPaymentsPerMonth = (1 / $frequency);
-            return $price * $numberOfPaymentsPerMonth;
-        case 4:
-            $numberOfMonths = (12 * $frequency);
-            return $price / $numberOfMonths;
-    }
-}
-
-function getPricePerWeek($cycle, $frequency, $price)
-{
-    switch ($cycle) {
-        case 1: // Days
-            $numberOfPaymentsPerWeek = (7 / $frequency);
-            return $price * $numberOfPaymentsPerWeek;
-        case 2: // Weeks
-            $numberOfPaymentsPerWeek = (1 / $frequency);
-            return $price * $numberOfPaymentsPerWeek;
-        case 3: // Months
-            $numberOfWeeksPerMonth = 4.35;
-            $numberOfPaymentsPerWeek = (1 / ($frequency * $numberOfWeeksPerMonth));
-            return $price * $numberOfPaymentsPerWeek;
-        case 4: // Years
-            $numberOfWeeksPerYear = 52;
-            $numberOfPaymentsPerWeek = (1 / ($frequency * $numberOfWeeksPerYear));
-            return $price * $numberOfPaymentsPerWeek;
-    }
-}
-
-function getPricePerYear($cycle, $frequency, $price)
-{
-    switch ($cycle) {
-        case 1: // Days
-            $numberOfPaymentsPerYear = (365 / $frequency);
-            return $price * $numberOfPaymentsPerYear;
-        case 2: // Weeks
-            $numberOfPaymentsPerYear = (52 / $frequency);
-            return $price * $numberOfPaymentsPerYear;
-        case 3: // Months
-            $numberOfPaymentsPerYear = (12 / $frequency);
-            return $price * $numberOfPaymentsPerYear;
-        case 4: // Years
-            $numberOfPaymentsPerYear = (1 / $frequency);
-            return $price * $numberOfPaymentsPerYear;
-    }
-}
 
 function getCycleShortNotation($cycle, $frequency)
 {

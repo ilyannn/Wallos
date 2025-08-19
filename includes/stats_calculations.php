@@ -1,22 +1,6 @@
 <?php
 
-function getPricePerMonth($cycle, $frequency, $price)
-{
-    switch ($cycle) {
-        case 1:
-            $numberOfPaymentsPerMonth = (30 / $frequency);
-            return $price * $numberOfPaymentsPerMonth;
-        case 2:
-            $numberOfPaymentsPerMonth = (4.35 / $frequency);
-            return $price * $numberOfPaymentsPerMonth;
-        case 3:
-            $numberOfPaymentsPerMonth = (1 / $frequency);
-            return $price * $numberOfPaymentsPerMonth;
-        case 4:
-            $numberOfMonths = (12 * $frequency);
-            return $price / $numberOfMonths;
-    }
-}
+require_once 'price_calculations.php';
 
 function getPriceConverted($price, $currency, $database, $userId)
 {

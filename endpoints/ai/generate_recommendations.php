@@ -1,22 +1,7 @@
 <?php
 set_time_limit(300);
 require_once '../../includes/connect_endpoint.php';
-
-function getPricePerMonth($cycle, $frequency, $price)
-{
-    switch ($cycle) {
-        case 1:
-            return $price * (30 / $frequency);        // daily
-        case 2:
-            return $price * (4.35 / $frequency);       // weekly
-        case 3:
-            return $price / $frequency;                // monthly
-        case 4:
-            return $price / (12 * $frequency);         // yearly
-        default:
-            return $price;
-    }
-}
+require_once '../../includes/price_calculations.php';
 
 function describeFrequency($cycle, $frequency)
 {
