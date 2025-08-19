@@ -1,10 +1,10 @@
-const DEFAULT_PERIOD = 'month';
+const DEFAULT_COST = 'monthly';
 
 let isSortOptionsOpen = false;
 let isPeriodOptionsOpen = false;
 let scrollTopBeforeOpening = 0;
 const shouldScroll = window.innerWidth <= 768;
-let currentPeriod = DEFAULT_PERIOD;
+let currentCost = DEFAULT_COST;
 
 function toggleOpenSubscription(subId) {
   const subscriptionElement = document.querySelector('.subscription[data-id="' + subId + '"]');
@@ -381,10 +381,10 @@ function fetchSubscriptions(id, event, initiator) {
     getSubscriptions += getSubscriptions.includes("?") ? `&renewalType=${activeFilters['renewalType']}` : `?renewalType=${activeFilters['renewalType']}`;
   }
   
-  // Always pass the current period parameter
+  // Always pass the current cost parameter
   const urlParams = new URLSearchParams(window.location.search);
-  const period = urlParams.get('period') || DEFAULT_PERIOD;
-  getSubscriptions += getSubscriptions.includes("?") ? `&period=${period}` : `?period=${period}`;
+  const cost = urlParams.get('cost') || DEFAULT_COST;
+  getSubscriptions += getSubscriptions.includes("?") ? `&cost=${cost}` : `?cost=${cost}`;
 
   fetch(getSubscriptions)
     .then(response => response.text())
@@ -899,16 +899,7 @@ function toISOStringWithTimezone(date) {
     ':' + minutesOffset;
 }
 
-function setPeriod(period) {
-  // Update current period
-  currentPeriod = period;
-  
-  // Update button text
-  const periodText = document.getElementById('period-text');
-  if (periodText) {
-    periodText.textContent = period.charAt(0).toUpperCase() + period.slice(1);
-  }
-  
+function setCost(cost) {
   // Close the dropdown
   const periodOptions = document.querySelector("#period-options");
   if (periodOptions) {
@@ -916,9 +907,9 @@ function setPeriod(period) {
   }
   isPeriodOptionsOpen = false;
   
-  // Reload page with new period parameter
+  // Reload page with new cost parameter
   const url = new URL(window.location);
-  url.searchParams.set('period', period);
+  url.searchParams.set('cost', cost);
   window.location.href = url.toString();
 }
 
@@ -928,14 +919,8 @@ window.addEventListener('load', () => {
     swipeHintAnimation();
   }
   
-  // Set current period from URL parameter
+  // Set current cost from URL parameter
   const urlParams = new URLSearchParams(window.location.search);
-  const period = urlParams.get('period') || DEFAULT_PERIOD;
-  currentPeriod = period;
-  
-  // Update button text
-  const periodText = document.getElementById('period-text');
-  if (periodText) {
-    periodText.textContent = period.charAt(0).toUpperCase() + period.slice(1);
-  }
+  const cost = urlParams.get('cost') || DEFAULT_COST;
+  currentCost = cost;
 });

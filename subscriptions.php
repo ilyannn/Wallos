@@ -7,8 +7,23 @@ include_once 'includes/list_subscriptions.php';
 
 $sort = "next_payment";
 $sortOrder = $sort;
-$period = isset($_GET['period']) ? $_GET['period'] : 'month';
-// Validate period parameter
+// Map cost parameter to internal period names
+$costParam = isset($_GET['cost']) ? $_GET['cost'] : 'monthly';
+$period = 'month'; // Default
+switch ($costParam) {
+  case 'weekly':
+    $period = 'week';
+    break;
+  case 'yearly':
+    $period = 'year';
+    break;
+  case 'monthly':
+  default:
+    $period = 'month';
+    break;
+}
+
+// Fallback validation
 $allowedPeriods = ['week', 'month', 'year'];
 if (!in_array($period, $allowedPeriods)) {
   $period = 'month'; // Safe fallback
@@ -236,17 +251,32 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
       <div class="period-selector">
         <button class="button secondary-button" onClick="togglePeriodOptions()" id="period-button" 
           title="<?= translate('period', $i18n) ?>">
-          <span id="period-text"><?= ucfirst($period) ?></span>
+          <span id="period-text">
+            <?php
+            // Map period to cycle ID and use getBillingCycle for consistency
+            switch ($period) {
+              case 'week':
+                echo getBillingCycle(2, 1, $i18n);
+                break;
+              case 'year':
+                echo getBillingCycle(4, 1, $i18n);
+                break;
+              default: // month
+                echo getBillingCycle(3, 1, $i18n);
+                break;
+            }
+            ?>
+          </span>
           <i class="fa-solid fa-chevron-down"></i>
         </button>
         <div class="period-options" id="period-options">
-          <div class="period-option" data-period="week" onClick="setPeriod('week')">
+          <div class="period-option" data-cost="weekly" onClick="setCost('weekly')">
             <span><?= getBillingCycle(2, 1, $i18n) ?></span>
           </div>
-          <div class="period-option" data-period="month" onClick="setPeriod('month')">
+          <div class="period-option" data-cost="monthly" onClick="setCost('monthly')">
             <span><?= getBillingCycle(3, 1, $i18n) ?></span>
           </div>
-          <div class="period-option" data-period="year" onClick="setPeriod('year')">
+          <div class="period-option" data-cost="yearly" onClick="setCost('yearly')">
             <span><?= getBillingCycle(4, 1, $i18n) ?></span>
           </div>
         </div>

@@ -32,8 +32,23 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
   $sort = "next_payment";
   $sortOrder = $sort;
   $order = "ASC";
-  $period = isset($_GET['period']) ? $_GET['period'] : 'month';
-  // Validate period parameter
+  // Map cost parameter to internal period names
+  $costParam = isset($_GET['cost']) ? $_GET['cost'] : 'monthly';
+  $period = 'month'; // Default
+  switch ($costParam) {
+    case 'weekly':
+      $period = 'week';
+      break;
+    case 'yearly':
+      $period = 'year';
+      break;
+    case 'monthly':
+    default:
+      $period = 'month';
+      break;
+  }
+  
+  // Fallback validation
   $allowedPeriods = ['week', 'month', 'year'];
   if (!in_array($period, $allowedPeriods)) {
     $period = 'month'; // Safe fallback
