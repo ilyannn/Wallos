@@ -97,9 +97,9 @@ The application uses SQLite with these key tables:
 - Demo environment available at demo.wallosapp.com
 
 ### Linting Strategy
-**Approach**: **Exclude-only** configuration - all linters enabled by default except those explicitly disabled
+**Approach**: **Exclude-only** configuration via GitHub Actions and local justfile commands
 
-**Auto-Enabled Linters (Essential Quality Checks):**
+**Auto-Enabled Quality Checks (20+ linters):**
 - ✅ **PHP_BUILTIN** - Catches syntax errors and fatal issues that prevent code execution
 - ✅ **CSS** - CSS syntax and basic style validation  
 - ✅ **JAVASCRIPT_ES** - JavaScript syntax and ES standards compliance
@@ -108,15 +108,41 @@ The application uses SQLite with these key tables:
 - ✅ **MARKDOWN** - Documentation quality and formatting
 - ✅ **BASH** - Shell script syntax validation
 - ✅ **DOCKERFILE_HADOLINT** - Dockerfile best practices
-- ✅ **And many others** - Super-Linter enables all relevant linters by default
+- ✅ **HTML, XML, SQL, and many others** - Comprehensive format validation
+- ✅ **Security linters** - Best practices and vulnerability detection
 
-**Explicitly Disabled Linters (Too Strict for Legacy Codebase):**
-- ❌ **VALIDATE_PHP_PHPCS=false** - Coding standards (would require massive formatting changes)
-- ❌ **VALIDATE_PHP_PHPSTAN=false** - Static analysis requiring type hints (legacy code uses dynamic patterns)
-- ❌ **VALIDATE_PHP_PSALM=false** - Strict type safety (incompatible with SQLite result handling patterns)
-- ❌ **VALIDATE_JSCPD=false** - Duplicate code detection (legacy codebase has acceptable duplication)
+**Strategically Disabled (Legacy Codebase Considerations):**
 
-**Philosophy**: Focus on **functionality and security** over **style preferences**. Catch real bugs and syntax errors while avoiding bikeshedding on formatting in a working legacy codebase.
+**❌ VALIDATE_PHP_PHPCS=false** - PHP Coding Standards  
+- *Why disabled*: Would generate hundreds of style violations in working legacy code
+- *Example issues*: Indentation spacing, variable naming (`$currency_id` vs `$currencyId`), comment formatting
+- *Impact*: Functions correctly but doesn't follow modern PSR standards
+- *Philosophy*: Focus on functionality over cosmetic formatting
+
+**❌ VALIDATE_PHP_PHPSTAN=false** - PHP Static Analysis
+- *Why disabled*: Requires strict typing incompatible with dynamic legacy patterns
+- *Example issues*: `$subscription['field']` array access, `$currencies[$id]` lookups, mixed return types
+- *Impact*: Would require adding type hints and refactoring throughout codebase
+- *Philosophy*: Legacy code uses valid but non-typed PHP patterns
+
+**❌ VALIDATE_PHP_PSALM=false** - Advanced PHP Type Safety  
+- *Why disabled*: Even stricter than PHPStan about null safety and type precision
+- *Example issues*: SQLite `fetchArray()` might return false, potential null access in dynamic queries
+- *Impact*: Would require massive refactoring for marginal safety gains in working code
+- *Philosophy*: Working dynamic code is preferable to over-engineered type safety
+
+**❌ VALIDATE_JSCPD=false** - Duplicate Code Detection
+- *Why disabled*: Legacy codebases often have acceptable duplication patterns
+- *Example issues*: Similar SQL query patterns, repeated form validation logic, common array processing
+- *Impact*: Some duplication is clearer than forced abstraction in legacy systems
+- *Philosophy*: Readability over DRY extremism
+
+**Automated Enforcement:**
+- GitHub Actions workflow runs on all PRs and main branch pushes
+- Local testing: `just superlint-pr` (fast), `just superlint` (comprehensive), `just superlint-github` (test CI config)
+- Smart validation: only changed files on PRs, full codebase on main pushes
+
+**Philosophy**: **"Catch real bugs, not style preferences"** - Focus on functionality and security over formatting in a working legacy system. Enable comprehensive quality checks while avoiding contributor friction from cosmetic violations.
 
 ## Deployment
 - Primarily Docker-based deployment via `docker-compose.yaml`
