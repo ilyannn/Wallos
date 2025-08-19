@@ -68,14 +68,6 @@ superlint:
     docker run --rm \
         -e RUN_LOCAL=true \
         -e VALIDATE_ALL_CODEBASE=true \
-        -e VALIDATE_CSS=true \
-        -e VALIDATE_JAVASCRIPT_ES=true \
-        -e VALIDATE_PHP_BUILTIN=true \
-        -e VALIDATE_YAML=true \
-        -e VALIDATE_JSON=true \
-        -e VALIDATE_MARKDOWN=true \
-        -e VALIDATE_BASH=true \
-        -e VALIDATE_DOCKERFILE_HADOLINT=true \
         -e VALIDATE_JSCPD=false \
         -e VALIDATE_PHP_PHPCS=false \
         -e VALIDATE_PHP_PHPSTAN=false \
@@ -147,14 +139,6 @@ superlint-github:
         -e RUN_LOCAL=true \
         -e VALIDATE_ALL_CODEBASE=false \
         -e DEFAULT_BRANCH=main \
-        -e VALIDATE_CSS=true \
-        -e VALIDATE_JAVASCRIPT_ES=true \
-        -e VALIDATE_PHP_BUILTIN=true \
-        -e VALIDATE_YAML=true \
-        -e VALIDATE_JSON=true \
-        -e VALIDATE_MARKDOWN=true \
-        -e VALIDATE_BASH=true \
-        -e VALIDATE_DOCKERFILE_HADOLINT=true \
         -e VALIDATE_JSCPD=false \
         -e VALIDATE_PHP_PHPCS=false \
         -e VALIDATE_PHP_PHPSTAN=false \

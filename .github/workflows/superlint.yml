@@ -49,16 +49,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Only lint changed files on PR, full codebase on push to main
           VALIDATE_ALL_CODEBASE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-          # Enable essential linters
-          VALIDATE_CSS: true
-          VALIDATE_JAVASCRIPT_ES: true  
-          VALIDATE_PHP_BUILTIN: true
-          VALIDATE_YAML: true
-          VALIDATE_JSON: true
-          VALIDATE_MARKDOWN: true
-          VALIDATE_BASH: true
-          VALIDATE_DOCKERFILE_HADOLINT: true
-          # Disable overly strict linters for legacy codebase
+          # Disable overly strict linters for legacy codebase (exclude-only approach)
           VALIDATE_JSCPD: false
           VALIDATE_PHP_PHPCS: false
           VALIDATE_PHP_PHPSTAN: false

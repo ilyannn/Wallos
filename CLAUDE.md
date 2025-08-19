@@ -97,21 +97,24 @@ The application uses SQLite with these key tables:
 - Demo environment available at demo.wallosapp.com
 
 ### Linting Strategy
-**Enabled Linters (Essential Quality Checks):**
-- ✅ **VALIDATE_PHP_BUILTIN** - Catches syntax errors and fatal issues that prevent code execution
-- ✅ **VALIDATE_CSS** - CSS syntax and basic style validation  
-- ✅ **VALIDATE_JAVASCRIPT_ES** - JavaScript syntax and ES standards compliance
-- ✅ **VALIDATE_YAML** - YAML syntax validation for Docker configs
-- ✅ **VALIDATE_JSON** - JSON syntax validation for manifests and configs
-- ✅ **VALIDATE_MARKDOWN** - Documentation quality and formatting
-- ✅ **VALIDATE_BASH** - Shell script syntax validation
-- ✅ **VALIDATE_DOCKERFILE_HADOLINT** - Dockerfile best practices
+**Approach**: **Exclude-only** configuration - all linters enabled by default except those explicitly disabled
 
-**Disabled Linters (Too Strict for Legacy Codebase):**
-- ❌ **VALIDATE_PHP_PHPCS** - Coding standards (would require massive formatting changes)
-- ❌ **VALIDATE_PHP_PHPSTAN** - Static analysis requiring type hints (legacy code uses dynamic patterns)
-- ❌ **VALIDATE_PHP_PSALM** - Strict type safety (incompatible with SQLite result handling patterns)
-- ❌ **VALIDATE_JSCPD** - Duplicate code detection (legacy codebase has acceptable duplication)
+**Auto-Enabled Linters (Essential Quality Checks):**
+- ✅ **PHP_BUILTIN** - Catches syntax errors and fatal issues that prevent code execution
+- ✅ **CSS** - CSS syntax and basic style validation  
+- ✅ **JAVASCRIPT_ES** - JavaScript syntax and ES standards compliance
+- ✅ **YAML** - YAML syntax validation for Docker configs
+- ✅ **JSON** - JSON syntax validation for manifests and configs
+- ✅ **MARKDOWN** - Documentation quality and formatting
+- ✅ **BASH** - Shell script syntax validation
+- ✅ **DOCKERFILE_HADOLINT** - Dockerfile best practices
+- ✅ **And many others** - Super-Linter enables all relevant linters by default
+
+**Explicitly Disabled Linters (Too Strict for Legacy Codebase):**
+- ❌ **VALIDATE_PHP_PHPCS=false** - Coding standards (would require massive formatting changes)
+- ❌ **VALIDATE_PHP_PHPSTAN=false** - Static analysis requiring type hints (legacy code uses dynamic patterns)
+- ❌ **VALIDATE_PHP_PSALM=false** - Strict type safety (incompatible with SQLite result handling patterns)
+- ❌ **VALIDATE_JSCPD=false** - Duplicate code detection (legacy codebase has acceptable duplication)
 
 **Philosophy**: Focus on **functionality and security** over **style preferences**. Catch real bugs and syntax errors while avoiding bikeshedding on formatting in a working legacy codebase.
 
