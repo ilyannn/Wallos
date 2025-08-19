@@ -2,7 +2,6 @@
 
 require_once 'includes/header.php';
 require_once 'includes/getdbkeys.php';
-require_once 'includes/currency_formatter.php';
 
 function formatPrice($price, $currencyCode, $currencies)
 {
@@ -247,7 +246,7 @@ while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
                                 <p class="subscription-item-title"><?= translate("budget_used", $i18n) ?></p>
                                 <div class="subscription-item-info">
                                     <p class="subscription-item-value">
-                                        <?= number_format($budgetUsed, DECIMALS_CURRENCY) ?>%
+                                        <?= number_format($budgetUsed, 2) ?>%
                                     </p>
                                 </div>
                             </div>

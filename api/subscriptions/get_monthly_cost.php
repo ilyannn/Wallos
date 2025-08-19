@@ -28,7 +28,6 @@ Example response:
 */
 
 require_once '../../includes/connect_endpoint.php';
-require_once '../../includes/currency_formatter.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 
@@ -164,7 +163,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" || $_SERVER["REQUEST_METHOD"] === "GET
     echo json_encode([
         'success' => true,
         'title' => $title,
-        'monthly_cost' => number_format($monthlyCost, DECIMALS_CURRENCY),
+        'monthly_cost' => number_format($monthlyCost, 2),
         'localized_monthly_cost' => $localizedMonthlyCost,
         'currency_code' => $currency_code,
         'currency_symbol' => $currency_symbol,

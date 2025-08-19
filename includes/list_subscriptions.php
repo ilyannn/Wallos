@@ -1,7 +1,10 @@
 <?php
 
 require_once 'i18n/getlang.php';
-require_once 'currency_formatter.php';
+
+// Decimal formatting constants
+const DECIMALS_WHOLE = 0;      // For whole numbers (yearly view)
+const DECIMALS_CURRENCY = 2;   // For currency display (monthly/weekly view)
 
 function getBillingCycle($cycle, $frequency, $i18n)
 {

@@ -1,9 +1,5 @@
 <?php
 
-// Decimal formatting constants
-const DECIMALS_WHOLE = 0;      // For whole numbers (yearly view)
-const DECIMALS_CURRENCY = 2;   // For currency display (monthly/weekly view)
-
 final class CurrencyFormatter
 {
     private static $instance;

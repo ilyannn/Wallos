@@ -9,7 +9,6 @@ It returns a downloadable VCAL file with the active subscriptions
 */
 
 require_once '../../includes/connect_endpoint.php';
-require_once '../../includes/currency_formatter.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 
@@ -171,7 +170,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" || $_SERVER["REQUEST_METHOD"] === "GET
         $subscription['payment_method'] = $paymentMethods[$subscription['payment_method_id']];
         $subscription['currency'] = $currencies[$subscription['currency_id']]['symbol'];
         $subscription['trigger'] = ($subscription['notify_days_before'] == -1) ? $globalNotificationDays : ($subscription['notify_days_before'] ?: 1);
-        $subscription['price'] = number_format($subscription['price'], DECIMALS_CURRENCY);
+        $subscription['price'] = number_format($subscription['price'], 2);
 
         $uid = uniqid();
         $summary = html_entity_decode($subscription['name'], ENT_QUOTES, 'UTF-8');

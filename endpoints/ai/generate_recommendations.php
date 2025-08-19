@@ -1,7 +1,6 @@
 <?php
 set_time_limit(300);
 require_once '../../includes/connect_endpoint.php';
-require_once '../../includes/currency_formatter.php';
 
 function getPricePerMonth($cycle, $frequency, $price)
 {
@@ -149,7 +148,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             if ($row['inactive'])
                 continue;
 
-            $price = round($row['price'], DECIMALS_CURRENCY);
+            $price = round($row['price'], 2);
             $currencyCode = $currencies[$row['currency_id']]['code'] ?? '';
             $priceFormatted = $currencyCode ? "$price $currencyCode" : "$price";
 
