@@ -76,7 +76,7 @@ superlint:
         -w /tmp/lint \
         github/super-linter:latest
 
-# Run Superlinter only on PR changes (much faster)  
+# Run Superlinter only on PR changes (much faster)
 superlint-pr:
     @echo "Running Superlinter on PR changes only..."
     @echo "Detecting changed files since main branch..."
@@ -130,3 +130,7 @@ dev-clean:
     docker compose -f docker-compose.yaml -f docker-compose.dev.yaml down -v
     docker system prune -f
     @echo "Development environment cleaned. Run 'just dev' to restart."
+
+fmt:
+    just --format --unstable
+    bun x --bun prettier --write CLAUDE.md docker-compose.yaml docker-compose.dev.yaml
