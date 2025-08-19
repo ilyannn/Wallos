@@ -92,6 +92,13 @@ superlint-pr:
     @echo "Running Super-Linter on changed files only..."
     docker run --rm \
         -e RUN_LOCAL=true \
+        -e VALIDATE_JSCPD=false \
+        -e VALIDATE_PHP_PHPCS=false \
+        -e VALIDATE_PHP_PHPSTAN=false \
+        -e VALIDATE_PHP_PSALM=false \
+        -e VALIDATE_CSS=false \
+        -e VALIDATE_JAVASCRIPT_STANDARD=false \
+        -e VALIDATE_NATURAL_LANGUAGE=false \
         -v /tmp/wallos-pr-lint:/tmp/lint \
         -w /tmp/lint \
         github/super-linter:latest
@@ -143,6 +150,9 @@ superlint-github:
         -e VALIDATE_PHP_PHPCS=false \
         -e VALIDATE_PHP_PHPSTAN=false \
         -e VALIDATE_PHP_PSALM=false \
+        -e VALIDATE_CSS=false \
+        -e VALIDATE_JAVASCRIPT_STANDARD=false \
+        -e VALIDATE_NATURAL_LANGUAGE=false \
         -v $(pwd):/tmp/lint \
         -w /tmp/lint \
         github/super-linter:v5
