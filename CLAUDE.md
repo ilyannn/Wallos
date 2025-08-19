@@ -91,7 +91,6 @@ The application uses SQLite with these key tables:
 ## Testing and Quality
 - Use `just superlint` to run comprehensive linting on entire codebase
 - Use `just superlint-pr` to run fast linting on only PR changes  
-- Use `just superlint-github` to test GitHub Actions linting configuration locally
 - Automated linting via GitHub Actions on all PRs and main branch pushes
 - No automated test suite - manual testing required
 - Demo environment available at demo.wallosapp.com

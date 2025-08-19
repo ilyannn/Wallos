@@ -130,21 +130,3 @@ dev-clean:
     docker compose -f docker-compose.yaml -f docker-compose.dev.yaml down -v
     docker system prune -f
     @echo "Development environment cleaned. Run 'just dev' to restart."
-
-# Test GitHub Actions superlint workflow locally (simulates PR)
-superlint-github:
-    @echo "Running Superlinter with GitHub Actions configuration (PR mode)..."
-    docker run --rm \
-        -e RUN_LOCAL=true \
-        -e VALIDATE_ALL_CODEBASE=false \
-        -e DEFAULT_BRANCH=main \
-        -e VALIDATE_JSCPD=false \
-        -e VALIDATE_PHP_PHPCS=false \
-        -e VALIDATE_PHP_PHPSTAN=false \
-        -e VALIDATE_PHP_PSALM=false \
-        -e VALIDATE_CSS=false \
-        -e VALIDATE_JAVASCRIPT_STANDARD=false \
-        -e VALIDATE_NATURAL_LANGUAGE=false \
-        -v $(pwd):/tmp/lint \
-        -w /tmp/lint \
-        github/super-linter:v5
