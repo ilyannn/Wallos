@@ -26,19 +26,27 @@ function getSubscriptionProgress($cycle, $frequency, $next_payment)
     $nextPaymentDate = new DateTime($next_payment);
     $currentDate = new DateTime('now');
 
-    $paymentCycleDays = 30; // Default to monthly
-    if ($cycle === 1) {
-        $paymentCycleDays = 1 * $frequency;
-    } else if ($cycle === 2) {
-        $paymentCycleDays = 7 * $frequency;
-    } else if ($cycle === 3) {
-        $paymentCycleDays = 30 * $frequency;
-    } else if ($cycle === 4) {
-        $paymentCycleDays = 365 * $frequency;
+    // Calculate the interval to go back based on the cycle using proper DateInterval
+    $intervalSpec = "P";
+    switch ($cycle) {
+        case 1: // Daily
+            $intervalSpec .= "{$frequency}D";
+            break;
+        case 2: // Weekly
+            $intervalSpec .= "{$frequency}W";
+            break;
+        case 3: // Monthly
+            $intervalSpec .= "{$frequency}M";
+            break;
+        case 4: // Yearly
+            $intervalSpec .= "{$frequency}Y";
+            break;
+        default:
+            $intervalSpec .= "1M"; // Default to monthly
     }
 
     $lastPaymentDate = clone $nextPaymentDate;
-    $lastPaymentDate->modify("-$paymentCycleDays days");
+    $lastPaymentDate->sub(new DateInterval($intervalSpec));
 
     $totalCycleDays = $lastPaymentDate->diff($nextPaymentDate)->days;
     $daysSinceLastPayment = $lastPaymentDate->diff($currentDate)->days;
