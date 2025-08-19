@@ -262,7 +262,8 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
     if ($row !== false) {
         $mainCurrencyId = $row['main_currency'];
     } else {
-        $mainCurrencyId = $currencies[1]['id']; // Fallback to EUR
+        // Safe fallback: get the first available currency
+        $mainCurrencyId = !empty($currencies) ? array_key_first($currencies) : null;
     }
     
     $formatter = new IntlDateFormatter(
@@ -307,7 +308,7 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
 
       // Always convert to main currency for selected period display
       $mainPrice = $print[$id]['price']; // Start with original price
-      if ($currencyId != $mainCurrencyId) {
+      if ($mainCurrencyId !== null && $currencyId != $mainCurrencyId) {
         $mainPrice = getPriceConverted($mainPrice, $currencyId, $db);
       }
       
@@ -323,7 +324,7 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
           $print[$id]['price'] = getPricePerMonth($cycle, $frequency, $mainPrice);
           break;
       }
-      $print[$id]['currency_code'] = $currencies[$mainCurrencyId]['code'];
+      $print[$id]['currency_code'] = $mainCurrencyId !== null ? $currencies[$mainCurrencyId]['code'] : $currencies[$currencyId]['code'];
       
       // Store original price and currency in original billing cycle for comparison
       $print[$id]['original_price'] = floatval($subscription['price']);
