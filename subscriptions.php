@@ -561,7 +561,6 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
     </div>
 
     <div class="form-group">
-      <label for="notes"><?= translate('notes', $i18n) ?></label>
       <label for="notes" class="sr-only"><?= translate('notes', $i18n) ?></label>
       <textarea id="notes" name="notes" placeholder="<?= translate('notes', $i18n) ?>" rows="3"></textarea>
     </div>
