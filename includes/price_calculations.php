@@ -66,7 +66,7 @@ function getPricePerWeek($cycle, $frequency, $price)
             $numberOfPaymentsPerWeek = 1 / ($frequency * WEEKS_PER_YEAR);
             return $price * $numberOfPaymentsPerWeek;
     }
-    return 0;
+    return null;
 }
 
 /**
