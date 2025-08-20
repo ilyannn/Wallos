@@ -39,7 +39,7 @@ function getPricePerMonth($cycle, $frequency, $price)
             $numberOfPaymentsPerMonth = 1 / ($frequency * MONTHS_PER_YEAR);
             return $price * $numberOfPaymentsPerMonth;
     }
-    return 0;
+    return null;
 }
 
 /**
