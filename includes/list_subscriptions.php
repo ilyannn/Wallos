@@ -195,8 +195,17 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
             $currentPaymentMethodId = $subscription['payment_method_id'];
         }
         ?>
-        <div class="subscription-container">
-            <?php
+        <?php
+            $subscriptionExtraClasses = "";
+            if ($subscription['inactive']) {
+                $subscriptionExtraClasses .= " inactive";
+            }
+            if ($subscription['auto_renew'] != 1) {
+                $subscriptionExtraClasses .= " manual";
+            }
+        ?>
+        <div class="subscription-container<?= $subscriptionExtraClasses ?>">
+        <?php
             if ($mobileNavigation === 'true') {
                 ?>
                 <div class="mobile-actions" data-id="<?= $subscription['id'] ?>">
@@ -225,14 +234,6 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
                     </button>
                 </div>
                 <?php
-            }
-
-            $subscriptionExtraClasses = "";
-            if ($subscription['inactive']) {
-                $subscriptionExtraClasses .= " inactive";
-            }
-            if ($subscription['auto_renew'] != 1) {
-                $subscriptionExtraClasses .= " manual";
             }
 
             $hasLogo = false;

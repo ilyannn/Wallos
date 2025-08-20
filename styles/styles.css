@@ -449,8 +449,13 @@ button.mobile-action-renew {
   text-decoration: line-through;
 }
 
+.subscription.inactive .logo img,
 .subscription.inactive .payment_method img {
-  opacity: 0.4;
+  opacity: 0.16;
+}
+
+.subscription-container.inactive .subscription-progress {
+  background-color: #cccccc;
 }
 
 .subscription-main {
