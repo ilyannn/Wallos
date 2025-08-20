@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../includes/connect_endpoint_crontabs.php';
+require_once __DIR__ . '/../../includes/price_calculations.php';
 
 require 'settimezone.php';
 
@@ -12,23 +13,6 @@ if (php_sapi_name() == 'cli') {
 $currentDate = new DateTime();
 $currentDateString = $currentDate->format('Y-m-d');
 
-function getPricePerMonth($cycle, $frequency, $price)
-{
-  switch ($cycle) {
-    case 1:
-      $numberOfPaymentsPerMonth = (30 / $frequency);
-      return $price * $numberOfPaymentsPerMonth;
-    case 2:
-      $numberOfPaymentsPerMonth = (4.35 / $frequency);
-      return $price * $numberOfPaymentsPerMonth;
-    case 3:
-      $numberOfPaymentsPerMonth = (1 / $frequency);
-      return $price * $numberOfPaymentsPerMonth;
-    case 4:
-      $numberOfMonths = (12 * $frequency);
-      return $price / $numberOfMonths;
-  }
-}
 
 function getPriceConverted($price, $currency, $database, $userId)
 {

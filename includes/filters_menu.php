@@ -92,13 +92,30 @@
   }
   ?>
   <?php
-  if (!isset($settings['hideDisabledSubscriptions']) || $settings['hideDisabledSubscriptions'] !== 'true') {
+  if (count($currencies) > 1) {
     ?>
     <div class="filtermenu-submenu">
-      <div class="filter-title" onClick="toggleSubMenu('state')"><?= translate("state", $i18n) ?></div>
-      <div class="filtermenu-submenu-content" id="filter-state">
-        <div class="filter-item capitalize" data-state="0"><?= translate("enabled", $i18n) ?></div>
-        <div class="filter-item capitalize" data-state="1"><?= translate("disabled", $i18n) ?></div>
+      <div class="filter-title" onClick="toggleSubMenu('currency')"><?= translate("currency", $i18n) ?></div>
+      <div class="filtermenu-submenu-content" id="filter-currency">
+        <?php
+        foreach ($currencies as $currency) {
+          if ($currency['count'] == 0) {
+            continue;
+          }
+          $selectedClass = '';
+          if (isset($_GET['currency'])) {
+            $currencyIds = explode(',', $_GET['currency']);
+            if (in_array($currency['id'], $currencyIds)) {
+              $selectedClass = 'selected';
+            }
+          }
+          ?>
+          <div class="filter-item <?= $selectedClass ?>" data-currencyid="<?= htmlspecialchars($currency['id'], ENT_QUOTES, 'UTF-8') ?>">
+            <?= htmlspecialchars($currency['name'], ENT_QUOTES, 'UTF-8') ?>
+          </div>
+          <?php
+        }
+        ?>
       </div>
     </div>
     <?php
@@ -113,7 +130,21 @@
     </div>
   </div>
 
-  <div class="filtermenu-submenu hide" id="clear-filters">
+  <?php
+  if (!isset($settings['hideDisabledSubscriptions']) || $settings['hideDisabledSubscriptions'] !== 'true') {
+    ?>
+    <div class="filtermenu-submenu">
+      <div class="filter-title" onClick="toggleSubMenu('state')"><?= translate("state", $i18n) ?></div>
+      <div class="filtermenu-submenu-content" id="filter-state">
+        <div class="filter-item capitalize" data-state="0"><?= translate("enabled", $i18n) ?></div>
+        <div class="filter-item capitalize" data-state="1"><?= translate("disabled", $i18n) ?></div>
+      </div>
+    </div>
+    <?php
+  }
+  ?>
+
+<div class="filtermenu-submenu hide" id="clear-filters">
     <div class="filter-title filter-clear" onClick="clearFilters()">
       <i class="fa-solid fa-times-circle"></i> <?= translate("clear", $i18n) ?>
     </div>

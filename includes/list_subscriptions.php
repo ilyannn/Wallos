@@ -1,6 +1,11 @@
 <?php
 
 require_once 'i18n/getlang.php';
+require_once 'price_calculations.php';
+
+// Decimal formatting constants
+const DECIMALS_WHOLE = 0;      // For whole numbers (yearly view)
+const DECIMALS_CURRENCY = 2;   // For currency display (monthly/weekly view)
 
 function getBillingCycle($cycle, $frequency, $i18n)
 {
@@ -21,19 +26,27 @@ function getSubscriptionProgress($cycle, $frequency, $next_payment)
     $nextPaymentDate = new DateTime($next_payment);
     $currentDate = new DateTime('now');
 
-    $paymentCycleDays = 30; // Default to monthly
-    if ($cycle === 1) {
-        $paymentCycleDays = 1 * $frequency;
-    } else if ($cycle === 2) {
-        $paymentCycleDays = 7 * $frequency;
-    } else if ($cycle === 3) {
-        $paymentCycleDays = 30 * $frequency;
-    } else if ($cycle === 4) {
-        $paymentCycleDays = 365 * $frequency;
+    // Calculate the interval to go back based on the cycle using proper DateInterval
+    $intervalSpec = "P";
+    switch ($cycle) {
+        case 1: // Daily
+            $intervalSpec .= "{$frequency}D";
+            break;
+        case 2: // Weekly
+            $intervalSpec .= "{$frequency}W";
+            break;
+        case 3: // Monthly
+            $intervalSpec .= "{$frequency}M";
+            break;
+        case 4: // Yearly
+            $intervalSpec .= "{$frequency}Y";
+            break;
+        default:
+            $intervalSpec .= "1M"; // Default to monthly
     }
 
     $lastPaymentDate = clone $nextPaymentDate;
-    $lastPaymentDate->modify("-$paymentCycleDays days");
+    $lastPaymentDate->sub(new DateInterval($intervalSpec));
 
     $totalCycleDays = $lastPaymentDate->diff($nextPaymentDate)->days;
     $daysSinceLastPayment = $lastPaymentDate->diff($currentDate)->days;
@@ -46,22 +59,25 @@ function getSubscriptionProgress($cycle, $frequency, $next_payment)
     return floor($subscriptionProgress);
 }
 
-function getPricePerMonth($cycle, $frequency, $price)
+
+function getCycleFirstLetter($cycle, $i18n)
 {
     switch ($cycle) {
         case 1:
-            $numberOfPaymentsPerMonth = (30 / $frequency);
-            return $price * $numberOfPaymentsPerMonth;
+            return mb_substr(translate('Daily', $i18n), 0, 1, 'UTF-8');
         case 2:
-            $numberOfPaymentsPerMonth = (4.35 / $frequency);
-            return $price * $numberOfPaymentsPerMonth;
+            return mb_substr(translate('Weekly', $i18n), 0, 1, 'UTF-8');
         case 3:
-            $numberOfPaymentsPerMonth = (1 / $frequency);
-            return $price * $numberOfPaymentsPerMonth;
+            return mb_substr(translate('Monthly', $i18n), 0, 1, 'UTF-8');
         case 4:
-            $numberOfMonths = (12 * $frequency);
-            return $price / $numberOfMonths;
+            return mb_substr(translate('Yearly', $i18n), 0, 1, 'UTF-8');
     }
+}
+
+function getCycleShortNotation($cycle, $frequency, $i18n)
+{
+    $letter = getCycleFirstLetter($cycle, $i18n);
+    return $frequency == 1 ? $letter : $frequency . $letter;
 }
 
 
@@ -179,8 +195,17 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
             $currentPaymentMethodId = $subscription['payment_method_id'];
         }
         ?>
-        <div class="subscription-container">
-            <?php
+        <?php
+            $subscriptionExtraClasses = "";
+            if ($subscription['inactive']) {
+                $subscriptionExtraClasses .= " inactive";
+            }
+            if ($subscription['auto_renew'] != 1) {
+                $subscriptionExtraClasses .= " manual";
+            }
+        ?>
+        <div class="subscription-container<?= $subscriptionExtraClasses ?>">
+        <?php
             if ($mobileNavigation === 'true') {
                 ?>
                 <div class="mobile-actions" data-id="<?= $subscription['id'] ?>">
@@ -211,14 +236,6 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
                 <?php
             }
 
-            $subscriptionExtraClasses = "";
-            if ($subscription['inactive']) {
-                $subscriptionExtraClasses .= " inactive";
-            }
-            if ($subscription['auto_renew'] != 1) {
-                $subscriptionExtraClasses .= " manual";
-            }
-
             $hasLogo = false;
             if ($subscription['logo'] != "") {
                 $hasLogo = true;
@@ -245,36 +262,70 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
                     <span class="cycle"
                         title="<?= $subscription['auto_renew'] ? translate("automatically_renews", $i18n) : translate("manual_renewal", $i18n) ?>">
                         <?php
-                        if ($subscription['auto_renew']) {
-                            include $imagePath . "images/siteicons/svg/automatic.php";
+                        // Show original price with cycle when different from selected period
+                        if (isset($subscription['original_price']) && isset($subscription['display_period'])) {
+                            $originalCycleNotation = getCycleShortNotation($subscription['original_cycle'], $subscription['original_frequency'], $i18n);
+                            // Convert display_period to localized first letter
+                            $selectedPeriodShort = '';
+                            switch ($subscription['display_period']) {
+                                case 'week':
+                                    $selectedPeriodShort = getCycleFirstLetter(2, $i18n);
+                                    break;
+                                case 'month':
+                                    $selectedPeriodShort = getCycleFirstLetter(3, $i18n);
+                                    break;
+                                case 'year':
+                                    $selectedPeriodShort = getCycleFirstLetter(4, $i18n);
+                                    break;
+                            }
+                            
+                            // Show original price and cycle if currency differs OR billing cycle differs from selected period
+                            if ($subscription['original_currency_code'] != $subscription['currency_code'] || 
+                                $originalCycleNotation != $selectedPeriodShort) {
+                                // Show the auto-renew icon first
+                                if ($subscription['auto_renew']) {
+                                    include $imagePath . "images/siteicons/svg/automatic.php";
+                                } else {
+                                    include $imagePath . "images/siteicons/svg/manual.php";
+                                }
+                                echo ' ' . strtoupper($originalCycleNotation) . ' · ' . formatPrice($subscription['original_price'], $subscription['original_currency_code'], $currencies);
+                            } else {
+                                // Normal billing cycle display
+                                if ($subscription['auto_renew']) {
+                                    include $imagePath . "images/siteicons/svg/automatic.php";
+                                } else {
+                                    include $imagePath . "images/siteicons/svg/manual.php";
+                                }
+                                echo ' ' . $subscription['billing_cycle'];
+                            }
                         } else {
-                            include $imagePath . "images/siteicons/svg/manual.php";
+                            // Fallback to normal display
+                            if ($subscription['auto_renew']) {
+                                include $imagePath . "images/siteicons/svg/automatic.php";
+                            } else {
+                                include $imagePath . "images/siteicons/svg/manual.php";
+                            }
+                            echo ' ' . $subscription['billing_cycle'];
                         }
                         ?>
-                        <?= $subscription['billing_cycle'] ?>
                     </span>
                     <span class="next"><?= formatDate($subscription['next_payment'], $lang) ?></span>
-                    <span class="price">
-                        <span class="value">
-                            <?= formatPrice($subscription['price'], $subscription['currency_code'], $currencies) ?>
-                            <?php
-                            if (isset($subscription['original_price']) && $subscription['original_price'] != $subscription['price']) {
-                                ?>
-                                <span
-                                    class="original_price">(<?= formatPrice($subscription['original_price'], $subscription['original_currency_code'], $currencies) ?>)</span>
-                                <?php
-                            }
-                            ?>
-                        </span>
-
-                    </span>
                     <span class="payment_method">
                         <img src="<?= $subscription['payment_method_icon'] ?>"
                             title="<?= translate('payment_method', $i18n) ?>: <?= $subscription['payment_method_name'] ?>" />
                     </span>
+                    <span class="price">
+                        <span class="value">
+                            <?php
+                            // Round to nearest whole number for yearly view, show cents for others
+                            $decimals = (isset($subscription['display_period']) && $subscription['display_period'] === 'year') ? DECIMALS_WHOLE : DECIMALS_CURRENCY;
+                            echo number_format($subscription['price'], $decimals);
+                            ?>
+                        </span>
+
+                    </span>
                     <?php
-                    $desktopMenuButtonClass = ""; {
-                    }
+                    $desktopMenuButtonClass = "";
                     if ($mobileNavigation === "true") {
                         $desktopMenuButtonClass = "mobileNavigationHideOnMobile";
                     }
@@ -338,7 +389,7 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
                     <div class="subscription-notes">
                         <span class="notes">
                             <?php include $imagePath . "images/siteicons/svg/notes.php"; ?>
-                            <?= $subscription['notes'] ?>
+                            <?= nl2br(htmlspecialchars($subscription['notes'])) ?>
                         </span>
                     </div>
                     <?php
@@ -360,15 +411,5 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
     }
 }
 
-$query = "SELECT main_currency FROM user WHERE id = :userId";
-$stmt = $db->prepare($query);
-$stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
-$result = $stmt->execute();
-$row = $result->fetchArray(SQLITE3_ASSOC);
-if ($row !== false) {
-    $mainCurrencyId = $row['main_currency'];
-} else {
-    $mainCurrencyId = $currencies[1]['id'];
-}
 
 ?>

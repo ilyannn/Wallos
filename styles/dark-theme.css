@@ -66,6 +66,17 @@ svg .text-color {
     box-shadow: 0 2px 5px rgba(50, 50, 50, 0.1);
 }
 
+.subscription.inactive .logo img,
+.subscription.inactive .payment_method img {
+    opacity: 0.2;
+}
+
+.subscription-container.inactive .subscription-progress {
+    background-color: #cccccc;
+    opacity: 0.2;
+}
+  
+
 .subscription-main .actions {
     color: #E0E0E0
 }

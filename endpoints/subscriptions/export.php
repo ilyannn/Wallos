@@ -9,6 +9,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 }
 
 require_once '../../includes/getdbkeys.php';
+require_once '../../includes/list_subscriptions.php';
 
 $subscriptions = array();
 
@@ -18,21 +19,10 @@ $stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
 $result = $stmt->execute();
 
 while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-    $cycle = $cycles[$row['cycle']]['name'];
-    $frequency =$row['frequency'];
-
-    $cyclesMap = array(
-        'Daily' => 'Days',
-        'Weekly' => 'Weeks',
-        'Monthly' => 'Months',
-        'Yearly' => 'Years'
-    );
-
-    if ($frequency == 1) {
-        $cyclePrint = $cycle;
-    } else {
-        $cyclePrint = "Every " . $frequency . " " . $cyclesMap[$cycle];
-    }
+    $cycle = $row['cycle'];
+    $frequency = $row['frequency'];
+    
+    $cyclePrint = getBillingCycle($cycle, $frequency, $i18n);
 
     $subscriptionDetails = array(
         'Name' => str_replace(',', ' ', $row['name']),

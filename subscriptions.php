@@ -7,6 +7,27 @@ include_once 'includes/list_subscriptions.php';
 
 $sort = "next_payment";
 $sortOrder = $sort;
+// Map cost parameter to internal period names
+$costParam = isset($_GET['cost']) ? $_GET['cost'] : 'monthly';
+$period = 'month'; // Default
+switch ($costParam) {
+  case 'weekly':
+    $period = 'week';
+    break;
+  case 'yearly':
+    $period = 'year';
+    break;
+  case 'monthly':
+  default:
+    $period = 'month';
+    break;
+}
+
+// Fallback validation
+$allowedPeriods = ['week', 'month', 'year'];
+if (!in_array($period, $allowedPeriods)) {
+  $period = 'month'; // Safe fallback
+}
 
 if ($settings['disabledToBottom'] === 'true') {
   $sql = "SELECT * FROM subscriptions WHERE user_id = :userId ORDER BY inactive ASC, next_payment ASC";
@@ -77,6 +98,19 @@ if (isset($_GET['payment'])) {
   }
 }
 
+if (isset($_GET['currency'])) {
+  $currencyIds = explode(',', $_GET['currency']);
+  $placeholders = array_map(function ($key) {
+    return ":currency{$key}";
+  }, array_keys($currencyIds));
+
+  $sql .= " AND currency_id IN (" . implode(',', $placeholders) . ")";
+
+  foreach ($currencyIds as $key => $currencyId) {
+    $params[":currency{$key}"] = $currencyId;
+  }
+}
+
 if (!isset($settings['hideDisabledSubscriptions']) || $settings['hideDisabledSubscriptions'] !== 'true') {
   if (isset($_GET['state']) && $_GET['state'] != "") {
     $sql .= " AND inactive = :inactive";
@@ -131,6 +165,10 @@ foreach ($subscriptions as $subscription) {
   $categories[$categoryId]['count']++;
   $paymentMethodId = $subscription['payment_method_id'];
   $payment_methods[$paymentMethodId]['count']++;
+  $currencyId = $subscription['currency_id'];
+  if (isset($currencies[$currencyId])) {
+    $currencies[$currencyId]['count']++;
+  }
 }
 
 if ($sortOrder == "category_id") {
@@ -209,10 +247,57 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
         </button>
         <?php include 'includes/sort_options.php'; ?>
       </div>
+
+      <div class="period-selector">
+        <button class="button secondary-button" onClick="togglePeriodOptions()" id="period-button" 
+          title="<?= translate('period', $i18n) ?>">
+          <span id="period-text">
+            <?php
+            // Map period to cycle ID and use getBillingCycle for consistency
+            switch ($period) {
+              case 'week':
+                echo getBillingCycle(2, 1, $i18n);
+                break;
+              case 'year':
+                echo getBillingCycle(4, 1, $i18n);
+                break;
+              default: // month
+                echo getBillingCycle(3, 1, $i18n);
+                break;
+            }
+            ?>
+          </span>
+          <i class="fa-solid fa-chevron-down"></i>
+        </button>
+        <div class="period-options" id="period-options">
+          <div class="period-option" data-cost="weekly" onClick="setCost('weekly')">
+            <span><?= getBillingCycle(2, 1, $i18n) ?></span>
+          </div>
+          <div class="period-option" data-cost="monthly" onClick="setCost('monthly')">
+            <span><?= getBillingCycle(3, 1, $i18n) ?></span>
+          </div>
+          <div class="period-option" data-cost="yearly" onClick="setCost('yearly')">
+            <span><?= getBillingCycle(4, 1, $i18n) ?></span>
+          </div>
+        </div>
+      </div>
     </div>
   </header>
   <div class="subscriptions" id="subscriptions">
     <?php
+    // Get main currency for price conversion
+    $query = "SELECT main_currency FROM user WHERE id = :userId";
+    $stmt = $db->prepare($query);
+    $stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
+    $result = $stmt->execute();
+    $row = $result->fetchArray(SQLITE3_ASSOC);
+    if ($row !== false) {
+        $mainCurrencyId = $row['main_currency'];
+    } else {
+        // Safe fallback: get the first available currency
+        $mainCurrencyId = !empty($currencies) ? array_key_first($currencies) : null;
+    }
+    
     $formatter = new IntlDateFormatter(
       'en', // Force English locale
       IntlDateFormatter::SHORT,
@@ -253,17 +338,32 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
       $print[$id]['notes'] = $subscription['notes'];
       $print[$id]['replacement_subscription_id'] = $subscription['replacement_subscription_id'];
 
-      if (isset($settings['convertCurrency']) && $settings['convertCurrency'] === 'true' && $currencyId != $mainCurrencyId) {
-        $print[$id]['price'] = getPriceConverted($print[$id]['price'], $currencyId, $db);
-        $print[$id]['currency_code'] = $currencies[$mainCurrencyId]['code'];
+      // Always convert to main currency for selected period display
+      $mainPrice = $print[$id]['price']; // Start with original price
+      if ($mainCurrencyId !== null && $currencyId != $mainCurrencyId) {
+        $mainPrice = getPriceConverted($mainPrice, $currencyId, $db);
       }
-      if (isset($settings['showMonthlyPrice']) && $settings['showMonthlyPrice'] === 'true') {
-        $print[$id]['price'] = getPricePerMonth($cycle, $frequency, $print[$id]['price']);
+      
+      // Calculate price for selected period in main currency
+      switch ($period) {
+        case 'week':
+          $print[$id]['price'] = getPricePerWeek($cycle, $frequency, $mainPrice);
+          break;
+        case 'year':
+          $print[$id]['price'] = getPricePerYear($cycle, $frequency, $mainPrice);
+          break;
+        default: // month
+          $print[$id]['price'] = getPricePerMonth($cycle, $frequency, $mainPrice);
+          break;
       }
-      if (isset($settings['showOriginalPrice']) && $settings['showOriginalPrice'] === 'true') {
-        $print[$id]['original_price'] = floatval($subscription['price']);
-        $print[$id]['original_currency_code'] = $currencies[$subscription['currency_id']]['code'];
-      }
+      $print[$id]['currency_code'] = $mainCurrencyId !== null && isset($currencies[$mainCurrencyId]) ? $currencies[$mainCurrencyId]['code'] : (isset($currencies[$currencyId]) ? $currencies[$currencyId]['code'] : '');
+      
+      // Store original price and currency in original billing cycle for comparison
+      $print[$id]['original_price'] = floatval($subscription['price']);
+      $print[$id]['original_currency_code'] = isset($currencies[$subscription['currency_id']]) ? $currencies[$subscription['currency_id']]['code'] : '';
+      $print[$id]['original_cycle'] = $cycle;
+      $print[$id]['original_frequency'] = $frequency;
+      $print[$id]['display_period'] = $period;
     }
 
     if ($sortOrder == "alphanumeric") {
@@ -491,7 +591,8 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
     </div>
 
     <div class="form-group">
-      <input type="text" id="notes" name="notes" placeholder="<?= translate('notes', $i18n) ?>">
+      <label for="notes" class="sr-only"><?= translate('notes', $i18n) ?></label>
+      <textarea id="notes" name="notes" placeholder="<?= translate('notes', $i18n) ?>" rows="3"></textarea>
     </div>
 
     <div class="form-group">

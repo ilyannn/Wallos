@@ -29,10 +29,43 @@ $formatter = new IntlDateFormatter(
 
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 
-
   $sort = "next_payment";
   $sortOrder = $sort;
   $order = "ASC";
+  // Map cost parameter to internal period names
+  $costParam = isset($_GET['cost']) ? $_GET['cost'] : 'monthly';
+  $period = 'month'; // Default
+  switch ($costParam) {
+    case 'weekly':
+      $period = 'week';
+      break;
+    case 'yearly':
+      $period = 'year';
+      break;
+    case 'monthly':
+    default:
+      $period = 'month';
+      break;
+  }
+  
+  // Fallback validation
+  $allowedPeriods = ['week', 'month', 'year'];
+  if (!in_array($period, $allowedPeriods)) {
+    $period = 'month'; // Safe fallback
+  }
+  
+  // Get main currency for price conversion
+  $query = "SELECT main_currency FROM user WHERE id = :userId";
+  $stmt = $db->prepare($query);
+  $stmt->bindValue(':userId', $userId, SQLITE3_INTEGER);
+  $result = $stmt->execute();
+  $row = $result->fetchArray(SQLITE3_ASSOC);
+  if ($row !== false) {
+      $mainCurrencyId = $row['main_currency'];
+  } else {
+      // Safe fallback: get the first available currency
+      $mainCurrencyId = !empty($currencies) ? array_key_first($currencies) : null;
+  }
 
   $params = array();
   $sql = "SELECT * FROM subscriptions WHERE user_id = :userId";
@@ -79,6 +112,21 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 
     foreach ($allMembers as $idx => $member) {
       $params[":members{$idx}"] = $member;
+    }
+  }
+
+  if (isset($_GET['currency']) && $_GET['currency'] !== "") {
+    $allCurrencies = explode(',', $_GET['currency']);
+    $placeholders = array_map(function ($idx) {
+      return ":currencies{$idx}";
+    }, array_keys($allCurrencies));
+
+    $sql .= " AND (" . implode(' OR ', array_map(function ($placeholder) {
+      return "currency_id = {$placeholder}";
+    }, $placeholders)) . ")";
+
+    foreach ($allCurrencies as $idx => $currency) {
+      $params[":currencies{$idx}"] = $currency;
     }
   }
 
@@ -162,8 +210,8 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     $frequency = $subscription['frequency'];
     $print[$id]['billing_cycle'] = getBillingCycle($cycle, $frequency, $i18n);
     $paymentMethodId = $subscription['payment_method_id'];
-    $print[$id]['currency_code'] = $currencies[$subscription['currency_id']]['code'];
     $currencyId = $subscription['currency_id'];
+    $print[$id]['currency_code'] = isset($currencies[$currencyId]) ? $currencies[$currencyId]['code'] : '';
     $next_payment_timestamp = strtotime($subscription['next_payment']);
     $formatted_date = $formatter->format($next_payment_timestamp);
     $print[$id]['next_payment'] = $formatted_date;
@@ -181,17 +229,32 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     $print[$id]['notes'] = $subscription['notes'] ?? "";
     $print[$id]['replacement_subscription_id'] = $subscription['replacement_subscription_id'];
 
-    if (isset($settings['convertCurrency']) && $settings['convertCurrency'] === 'true' && $currencyId != $mainCurrencyId) {
-      $print[$id]['price'] = getPriceConverted($print[$id]['price'], $currencyId, $db);
-      $print[$id]['currency_code'] = $currencies[$mainCurrencyId]['code'];
+    // Always convert to main currency for selected period display
+    $mainPrice = $print[$id]['price']; // Start with original price
+    if ($mainCurrencyId !== null && $currencyId != $mainCurrencyId) {
+      $mainPrice = getPriceConverted($mainPrice, $currencyId, $db);
     }
-    if (isset($settings['showMonthlyPrice']) && $settings['showMonthlyPrice'] === 'true') {
-      $print[$id]['price'] = getPricePerMonth($cycle, $frequency, $print[$id]['price']);
+    
+    // Calculate price for selected period in main currency
+    switch ($period) {
+      case 'week':
+        $print[$id]['price'] = getPricePerWeek($cycle, $frequency, $mainPrice);
+        break;
+      case 'year':
+        $print[$id]['price'] = getPricePerYear($cycle, $frequency, $mainPrice);
+        break;
+      default: // month
+        $print[$id]['price'] = getPricePerMonth($cycle, $frequency, $mainPrice);
+        break;
     }
-    if (isset($settings['showOriginalPrice']) && $settings['showOriginalPrice'] === 'true') {
-      $print[$id]['original_price'] = floatval($subscription['price']);
-      $print[$id]['original_currency_code'] = $currencies[$subscription['currency_id']]['code'];
-    }
+    $print[$id]['currency_code'] = $mainCurrencyId !== null && isset($currencies[$mainCurrencyId]) ? $currencies[$mainCurrencyId]['code'] : (isset($currencies[$currencyId]) ? $currencies[$currencyId]['code'] : '');
+    
+    // Store original price and currency in original billing cycle for comparison
+    $print[$id]['original_price'] = floatval($subscription['price']);
+    $print[$id]['original_currency_code'] = isset($currencies[$subscription['currency_id']]) ? $currencies[$subscription['currency_id']]['code'] : '';
+    $print[$id]['original_cycle'] = $cycle;
+    $print[$id]['original_frequency'] = $frequency;
+    $print[$id]['display_period'] = $period;
   }
 
   if ($sortOrder == "alphanumeric") {

@@ -1,6 +1,10 @@
+const DEFAULT_COST = 'monthly';
+
 let isSortOptionsOpen = false;
+let isPeriodOptionsOpen = false;
 let scrollTopBeforeOpening = 0;
 const shouldScroll = window.innerWidth <= 768;
+let currentCost = DEFAULT_COST;
 
 function toggleOpenSubscription(subId) {
   const subscriptionElement = document.querySelector('.subscription[data-id="' + subId + '"]');
@@ -11,6 +15,14 @@ function toggleSortOptions() {
   const sortOptions = document.querySelector("#sort-options");
   sortOptions.classList.toggle("is-open");
   isSortOptionsOpen = !isSortOptionsOpen;
+}
+
+function togglePeriodOptions() {
+  const periodOptions = document.querySelector("#period-options");
+  if (periodOptions) {
+    periodOptions.classList.toggle("is-open");
+    isPeriodOptionsOpen = !isPeriodOptionsOpen;
+  }
 }
 
 function toggleNotificationDays() {
@@ -359,12 +371,20 @@ function fetchSubscriptions(id, event, initiator) {
   if (activeFilters['payments'].length > 0) {
     getSubscriptions += getSubscriptions.includes("?") ? `&payments=${activeFilters['payments']}` : `?payments=${activeFilters['payments']}`;
   }
+  if (activeFilters['currencies'].length > 0) {
+    getSubscriptions += getSubscriptions.includes("?") ? `&currency=${activeFilters['currencies']}` : `?currency=${activeFilters['currencies']}`;
+  }
   if (activeFilters['state'] !== "") {
     getSubscriptions += getSubscriptions.includes("?") ? `&state=${activeFilters['state']}` : `?state=${activeFilters['state']}`;
   }
   if (activeFilters['renewalType'] !== "") {
     getSubscriptions += getSubscriptions.includes("?") ? `&renewalType=${activeFilters['renewalType']}` : `?renewalType=${activeFilters['renewalType']}`;
   }
+  
+  // Always pass the current cost parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const cost = urlParams.get('cost') || DEFAULT_COST;
+  getSubscriptions += getSubscriptions.includes("?") ? `&cost=${cost}` : `?cost=${cost}`;
 
   fetch(getSubscriptions)
     .then(response => response.text())
@@ -606,6 +626,7 @@ const activeFilters = [];
 activeFilters['categories'] = [];
 activeFilters['members'] = [];
 activeFilters['payments'] = [];
+activeFilters['currencies'] = [];
 activeFilters['state'] = "";
 activeFilters['renewalType'] = "";
 
@@ -689,6 +710,16 @@ document.querySelectorAll('.filter-item').forEach(function (item) {
         activeFilters['payments'].push(paymentId);
         this.classList.add('selected');
       }
+    } else if (this.hasAttribute('data-currencyid')) {
+      const currencyId = this.getAttribute('data-currencyid');
+      if (activeFilters['currencies'].includes(currencyId)) {
+        const currencyIndex = activeFilters['currencies'].indexOf(currencyId);
+        activeFilters['currencies'].splice(currencyIndex, 1);
+        this.classList.remove('selected');
+      } else {
+        activeFilters['currencies'].push(currencyId);
+        this.classList.add('selected');
+      }
     } else if (this.hasAttribute('data-state')) {
       const state = this.getAttribute('data-state');
       if (activeFilters['state'] === state) {
@@ -716,8 +747,8 @@ document.querySelectorAll('.filter-item').forEach(function (item) {
     }
 
     if (activeFilters['categories'].length > 0 || activeFilters['members'].length > 0 ||
-       activeFilters['payments'].length > 0 || activeFilters['state'] !== "" || 
-       activeFilters['renewalType'] !== "") {
+       activeFilters['payments'].length > 0 || activeFilters['currencies'].length > 0 || 
+       activeFilters['state'] !== "" || activeFilters['renewalType'] !== "") {
       document.querySelector('#clear-filters').classList.remove('hide');
     } else {
       document.querySelector('#clear-filters').classList.add('hide');
@@ -733,6 +764,7 @@ function clearFilters() {
   activeFilters['categories'] = [];
   activeFilters['members'] = [];
   activeFilters['payments'] = [];
+  activeFilters['currencies'] = [];
   activeFilters['state'] = "";
   activeFilters['renewalType'] = "";
   
@@ -867,8 +899,28 @@ function toISOStringWithTimezone(date) {
     ':' + minutesOffset;
 }
 
+function setCost(cost) {
+  // Close the dropdown
+  const periodOptions = document.querySelector("#period-options");
+  if (periodOptions) {
+    periodOptions.classList.remove("is-open");
+  }
+  isPeriodOptionsOpen = false;
+  
+  // Reload page with new cost parameter
+  const url = new URL(window.location);
+  url.searchParams.set('cost', cost);
+  window.location.href = url.toString();
+}
+
+// Initialize period selector on page load
 window.addEventListener('load', () => {
   if (document.querySelector('.subscription')) {
     swipeHintAnimation();
   }
+  
+  // Set current cost from URL parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const cost = urlParams.get('cost') || DEFAULT_COST;
+  currentCost = cost;
 });
