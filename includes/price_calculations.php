@@ -93,5 +93,5 @@ function getPricePerYear($cycle, $frequency, $price)
             $numberOfPaymentsPerYear = 1 / $frequency;
             return $price * $numberOfPaymentsPerYear;
     }
-    return 0;
+    return null;
 }
