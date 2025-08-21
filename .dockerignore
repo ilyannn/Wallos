@@ -1,3 +1,9 @@
+/db/*
+!/db/wallos.empty.db
+/images/uploads/logos/*
+!/images/uploads/logos/wallos.png
+/logos/
+
 # Exclude .vscode directory
 .vscode/
 
