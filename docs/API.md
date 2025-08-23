@@ -688,3 +688,344 @@ All endpoints return standardized error responses:
 - The `in_use` field indicates whether an item (category, currency, payment method, household member) is currently referenced by any subscription
 - Currency conversion requires exchange rates to be configured via Fixer API
 - Admin endpoints require the authenticated user to have ID=1 (admin user)
+
+---
+
+## Interactive Endpoints
+
+The following endpoints are used by the web interface for interactive operations. Unlike the API endpoints above, these require session-based authentication and return various response formats.
+
+### Subscriptions Management
+
+#### POST `/endpoints/subscription/add.php`
+
+Creates a new subscription or updates an existing one. Handles file uploads for logos.
+
+**Authentication**: Session-based (web interface)
+
+**Parameters** (form data):
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | No | Subscription ID (for editing) |
+| name | string | Yes | Subscription name |
+| price | float | Yes | Subscription price |
+| currency_id | integer | Yes | Currency ID |
+| frequency | integer | Yes | Payment frequency |
+| cycle | integer | Yes | Payment cycle (1=days, 2=weeks, 3=months, 4=years) |
+| next_payment | date | Yes | Next payment date |
+| auto_renew | boolean | No | Auto-renewal enabled |
+| start_date | date | Yes | Start date |
+| payment_method_id | integer | Yes | Payment method ID |
+| payer_user_id | integer | Yes | Payer user ID |
+| category_id | integer | Yes | Category ID |
+| notes | string | No | Notes |
+| url | string | No | Subscription URL |
+| logo-url | string | No | Logo URL (alternative to file upload) |
+| logo | file | No | Logo file upload |
+| notifications | boolean | No | Enable notifications |
+| notify_days_before | integer | No | Days before to notify |
+| inactive | boolean | No | Mark as inactive |
+| cancellation_date | date | No | Cancellation date |
+| replacement_subscription_id | integer | No | Replacement subscription ID |
+
+**Example Response** (success):
+```json
+{
+  "success": true,
+  "message": "Subscription added successfully"
+}
+```
+
+**Example Response** (error):
+```json
+{
+  "success": false,
+  "errorMessage": "Invalid URL format."
+}
+```
+
+#### DELETE `/endpoints/subscription/delete.php`
+
+Deletes a subscription by ID.
+
+**Authentication**: Session-based (web interface)
+
+**Parameters** (query string):
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | integer | Yes | Subscription ID to delete |
+
+**Response**: HTTP 204 (success) or HTTP 500 (error)
+
+### Categories Management
+
+#### GET/POST `/endpoints/categories/category.php`
+
+Manages subscription categories (add, edit, delete operations).
+
+**Authentication**: Session-based (web interface)
+
+**Add Category** (`?action=add`):
+- Creates a new category with default name "Category"
+- Response: `{"success": true, "categoryId": 123}` or error
+
+**Edit Category** (`?action=edit&categoryId=X&name=Y`):
+- Updates category name
+- Response: `{"success": true, "message": "Category saved"}` or error
+
+**Delete Category** (`?action=delete&categoryId=X`):
+- Deletes category if not in use
+- Cannot delete category ID 1 (default category)
+- Response: `{"success": true}` or error if category is in use
+
+### Payment Methods Management
+
+#### GET `/endpoints/payments/payment.php`
+
+Enables or disables a payment method.
+
+**Authentication**: Session-based (web interface)
+
+**Parameters** (query string):
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| paymentId | integer | Yes | Payment method ID |
+| enabled | boolean | Yes | Enable (1) or disable (0) |
+
+**Example Response**:
+```json
+{
+  "success": true,
+  "message": "enabled"
+}
+```
+
+**Note**: Cannot disable payment methods that are currently in use by subscriptions.
+
+### User Profile Management
+
+#### POST `/endpoints/user/save_user.php`
+
+Updates user profile information and handles avatar uploads.
+
+**Authentication**: Session-based (web interface)
+
+**Parameters** (form data):
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| username | string | Yes | Username |
+| email | string | Yes | Email address |
+| avatar | file | No | Avatar image upload |
+| main_currency | integer | Yes | Main currency ID |
+| language | string | Yes | Language code |
+| budget | float | No | Monthly budget |
+
+**Features**:
+- Automatically resizes and optimizes uploaded avatars
+- Updates currency exchange rates when main currency changes
+- Validates email format and username uniqueness
+
+### Notification Settings
+
+#### POST `/endpoints/notifications/saveemailnotifications.php`
+
+Configures email notification settings.
+
+**Authentication**: Session-based (web interface)
+
+**Parameters** (JSON body):
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| enabled | boolean | Yes | Enable email notifications |
+| smtpaddress | string | Yes* | SMTP server address |
+| smtpport | integer | Yes* | SMTP port |
+| encryption | string | No | Encryption type (default: "tls") |
+| smtpusername | string | No | SMTP username |
+| smtppassword | string | No | SMTP password |
+| fromemail | string | No | From email address |
+| otheremails | string | No | Additional recipient emails |
+
+*Required when enabled = true
+
+**Example Request**:
+```json
+{
+  "enabled": true,
+  "smtpaddress": "smtp.gmail.com",
+  "smtpport": 587,
+  "encryption": "tls",
+  "smtpusername": "user@gmail.com",
+  "smtppassword": "password",
+  "fromemail": "notifications@example.com"
+}
+```
+
+**Example Response**:
+```json
+{
+  "success": true,
+  "message": "Email notifications updated successfully"
+}
+```
+
+#### POST `/endpoints/notifications/savediscordnotifications.php`
+
+Configures Discord webhook notifications.
+
+**Authentication**: Session-based (web interface)
+
+**Parameters** (JSON body):
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| enabled | boolean | Yes | Enable Discord notifications |
+| webhook | string | Yes* | Discord webhook URL |
+
+*Required when enabled = true
+
+#### POST `/endpoints/notifications/savetelegramnotifications.php`
+
+Configures Telegram bot notifications.
+
+**Authentication**: Session-based (web interface)
+
+**Parameters** (JSON body):
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| enabled | boolean | Yes | Enable Telegram notifications |
+| bot_token | string | Yes* | Telegram bot token |
+| chat_id | string | Yes* | Chat ID |
+
+*Required when enabled = true
+
+#### POST `/endpoints/notifications/savegotifynotifications.php`
+
+Configures Gotify push notifications.
+
+**Authentication**: Session-based (web interface)
+
+**Parameters** (JSON body):
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| enabled | boolean | Yes | Enable Gotify notifications |
+| url | string | Yes* | Gotify server URL |
+| token | string | Yes* | Application token |
+
+*Required when enabled = true
+
+#### POST `/endpoints/notifications/savepushovernotifications.php`
+
+Configures Pushover notifications.
+
+**Authentication**: Session-based (web interface)
+
+**Parameters** (JSON body):
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| enabled | boolean | Yes | Enable Pushover notifications |
+| token | string | Yes* | Application token |
+| user | string | Yes* | User key |
+
+*Required when enabled = true
+
+#### POST `/endpoints/notifications/savewebhooknotifications.php`
+
+Configures custom webhook notifications.
+
+**Authentication**: Session-based (web interface)
+
+**Parameters** (JSON body):
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| enabled | boolean | Yes | Enable webhook notifications |
+| url | string | Yes* | Webhook URL |
+| headers | string | No | Custom headers (JSON format) |
+
+*Required when enabled = true
+
+### Currency Management
+
+#### POST `/endpoints/currency/fixer_api_key.php`
+
+Updates currency exchange API settings.
+
+**Authentication**: Session-based (web interface)
+
+**Parameters** (form data):
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| api_key | string | Yes | API key |
+| provider | integer | Yes | Provider (0=Fixer.io, 1=APILayer) |
+
+#### POST `/endpoints/currency/update_exchange.php`
+
+Manually updates exchange rates for all currencies.
+
+**Authentication**: Session-based (web interface)
+
+**Response**: Redirects to referrer page after updating rates.
+
+### Admin Endpoints (Session-based)
+
+#### POST `/endpoints/admin/savesmtpsettings.php`
+
+Updates global SMTP settings (admin only).
+
+**Authentication**: Session-based (admin user)
+
+**Parameters** (form data):
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| smtp_address | string | Yes | SMTP server |
+| smtp_port | integer | Yes | SMTP port |
+| smtp_username | string | Yes | Username |
+| smtp_password | string | Yes | Password |
+| from_email | string | Yes | From email |
+| encryption | string | Yes | Encryption type |
+
+#### POST `/endpoints/admin/saveoidcsettings.php`
+
+Configures OIDC/OAuth authentication settings (admin only).
+
+**Authentication**: Session-based (admin user)
+
+**Parameters** (form data):
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| name | string | Yes | Provider name |
+| client_id | string | Yes | OAuth client ID |
+| client_secret | string | Yes | OAuth client secret |
+| authorization_url | string | Yes | Authorization endpoint |
+| token_url | string | Yes | Token endpoint |
+| user_info_url | string | Yes | User info endpoint |
+| redirect_url | string | Yes | Redirect URL |
+| logout_url | string | No | Logout URL |
+| scopes | string | Yes | OAuth scopes |
+| user_identifier_field | string | Yes | User ID field name |
+| auto_create_user | boolean | No | Auto-create users |
+
+---
+
+## Key Differences
+
+### API Endpoints vs Interactive Endpoints
+
+**API Endpoints (`/api/`):**
+- Designed for programmatic access
+- Require API key authentication
+- Return standardized JSON responses
+- Read-only operations (GET data)
+- Consistent response format with `success`, `title`, `data`, `notes`
+
+**Interactive Endpoints (`/endpoints/`):**
+- Designed for web interface interaction
+- Require session-based authentication
+- Handle file uploads and complex form data
+- Support create, update, delete operations
+- Variable response formats depending on operation
+- Include business logic like logo processing, email validation
+
+**Common Features:**
+- Input validation and sanitization
+- User-specific data isolation
+- Internationalization support
+- Error handling with descriptive messages
