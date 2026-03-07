@@ -513,7 +513,7 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
       <div class="inline">
         <div class="split50">
           <label for="payment_method"><?= translate('payment_method', $i18n) ?></label>
-          <select id="payment_method" name="payment_method_id">
+          <select id="payment_method" name="payment_method_id" required>
             <?php
             foreach ($payment_methods as $payment) {
               ?>
@@ -542,7 +542,7 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
 
     <div class="form-group">
       <label for="category"><?= translate('category', $i18n) ?></label>
-      <select id="category" name="category_id">
+      <select id="category" name="category_id" required>
         <?php
         foreach ($categories as $category) {
           ?>

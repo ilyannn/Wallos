@@ -216,6 +216,18 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
         $paymentMethodId = $_POST["payment_method_id"];
         $payerUserId = $_POST["payer_user_id"];
         $categoryId = $_POST['category_id'];
+
+        // Validate required foreign keys
+        if (empty($paymentMethodId) || !is_numeric($paymentMethodId)) {
+            header('Content-Type: application/json');
+            echo json_encode(["success" => false, "errorMessage" => translate('fill_all_fields', $i18n)]);
+            exit();
+        }
+        if (empty($categoryId) || !is_numeric($categoryId)) {
+            header('Content-Type: application/json');
+            echo json_encode(["success" => false, "errorMessage" => translate('fill_all_fields', $i18n)]);
+            exit();
+        }
         $notes = validate($_POST["notes"]);
         $url = validate($_POST['url']);
         $logoUrl = validate($_POST['logo-url']);
