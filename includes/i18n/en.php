@@ -76,6 +76,7 @@ $i18n = [
     "member" => "Member",
     "category" => "Category",
     "payment_method" => "Payment Method",
+    "Original" => "Original",
     "Daily" => "Daily",
     "Weekly" => "Weekly",
     "Monthly" => "Monthly",

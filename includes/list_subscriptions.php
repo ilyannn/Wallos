@@ -262,10 +262,15 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
                     <span class="cycle"
                         title="<?= $subscription['auto_renew'] ? translate("automatically_renews", $i18n) : translate("manual_renewal", $i18n) ?>">
                         <?php
-                        // Show original price with cycle when different from selected period
-                        if (isset($subscription['original_price']) && isset($subscription['display_period'])) {
+                        if ($subscription['auto_renew']) {
+                            include $imagePath . "images/siteicons/svg/automatic.php";
+                        } else {
+                            include $imagePath . "images/siteicons/svg/manual.php";
+                        }
+
+                        if (isset($subscription['display_period']) && $subscription['display_period'] !== 'original'
+                            && isset($subscription['original_price'])) {
                             $originalCycleNotation = getCycleShortNotation($subscription['original_cycle'], $subscription['original_frequency'], $i18n);
-                            // Convert display_period to localized first letter
                             $selectedPeriodShort = '';
                             switch ($subscription['display_period']) {
                                 case 'week':
@@ -278,33 +283,14 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
                                     $selectedPeriodShort = getCycleFirstLetter(4, $i18n);
                                     break;
                             }
-                            
-                            // Show original price and cycle if currency differs OR billing cycle differs from selected period
-                            if ($subscription['original_currency_code'] != $subscription['currency_code'] || 
+
+                            if ($subscription['original_currency_code'] != $subscription['currency_code'] ||
                                 $originalCycleNotation != $selectedPeriodShort) {
-                                // Show the auto-renew icon first
-                                if ($subscription['auto_renew']) {
-                                    include $imagePath . "images/siteicons/svg/automatic.php";
-                                } else {
-                                    include $imagePath . "images/siteicons/svg/manual.php";
-                                }
                                 echo ' ' . strtoupper($originalCycleNotation) . ' · ' . formatPrice($subscription['original_price'], $subscription['original_currency_code'], $currencies);
                             } else {
-                                // Normal billing cycle display
-                                if ($subscription['auto_renew']) {
-                                    include $imagePath . "images/siteicons/svg/automatic.php";
-                                } else {
-                                    include $imagePath . "images/siteicons/svg/manual.php";
-                                }
                                 echo ' ' . $subscription['billing_cycle'];
                             }
                         } else {
-                            // Fallback to normal display
-                            if ($subscription['auto_renew']) {
-                                include $imagePath . "images/siteicons/svg/automatic.php";
-                            } else {
-                                include $imagePath . "images/siteicons/svg/manual.php";
-                            }
                             echo ' ' . $subscription['billing_cycle'];
                         }
                         ?>
@@ -317,9 +303,14 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
                     <span class="price">
                         <span class="value">
                             <?php
-                            // Round to nearest whole number for yearly view, show cents for others
-                            $decimals = (isset($subscription['display_period']) && $subscription['display_period'] === 'year') ? DECIMALS_WHOLE : DECIMALS_CURRENCY;
-                            echo number_format($subscription['price'], $decimals);
+                            if (isset($subscription['display_period']) && $subscription['display_period'] === 'original') {
+                                $cycleNotation = strtoupper(getCycleShortNotation($subscription['original_cycle'], $subscription['original_frequency'], $i18n));
+                                $formattedPrice = formatPrice($subscription['price'], $subscription['currency_code'], $currencies);
+                                echo $cycleNotation . ' · ' . $formattedPrice;
+                            } else {
+                                $decimals = (isset($subscription['display_period']) && $subscription['display_period'] === 'year') ? DECIMALS_WHOLE : DECIMALS_CURRENCY;
+                                echo number_format($subscription['price'], $decimals);
+                            }
                             ?>
                         </span>
 

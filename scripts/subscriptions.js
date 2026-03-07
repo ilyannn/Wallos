@@ -1,4 +1,4 @@
-const DEFAULT_COST = 'monthly';
+const DEFAULT_COST = 'original';
 
 let isSortOptionsOpen = false;
 let isPeriodOptionsOpen = false;
