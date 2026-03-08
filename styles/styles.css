@@ -365,6 +365,34 @@ button:hover svg .main-color {
   transform: translate(14px, -50%);
 }
 
+.waterline-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  font-size: 13px;
+  color: var(--text-color);
+}
+
+.waterline-label {
+  opacity: 0.6;
+}
+
+.waterline-date {
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 8px;
+  padding: 3px 8px;
+  font-size: 13px;
+  background: var(--box-background-color);
+  color: var(--text-color);
+}
+
+.waterline-divider {
+  height: 2px;
+  background: linear-gradient(to right, transparent, #4CAF50, transparent);
+  margin: 4px 0;
+}
+
 .subscriptions {
   display: flex;
   flex-direction: column;
@@ -379,6 +407,11 @@ button:hover svg .main-color {
   box-shadow: var(--box-shadow);
   border-radius: 16px;
 }
+
+.subscription-container.reviewed > .subscription {
+  background-color: rgba(76, 175, 80, 0.08);
+}
+
 
 .subscription-container>.mobile-actions {
   display: flex;
@@ -460,7 +493,7 @@ button.mobile-action-renew {
 
 .subscription-container>.subscription-progress-container>.subscription-progress {
   height: 3px;
-  background-color: var(--accent-color);
+  background-color: #93C5FD;
   display: block;
   position: absolute;
 }
