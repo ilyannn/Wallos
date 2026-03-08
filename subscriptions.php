@@ -118,6 +118,9 @@ if (!isset($settings['hideDisabledSubscriptions']) || $settings['hideDisabledSub
   if (isset($_GET['state']) && $_GET['state'] != "") {
     $sql .= " AND inactive = :inactive";
     $params[':inactive'] = $_GET['state'];
+  } else {
+    // Default to showing only active subscriptions
+    $sql .= " AND inactive = 0";
   }
 }
 
@@ -243,6 +246,13 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
         <?php include 'includes/filters_menu.php'; ?>
       </div>
 
+      <?php if (!isset($settings['hideDisabledSubscriptions']) || $settings['hideDisabledSubscriptions'] !== 'true') { ?>
+      <div class="show-disabled-toggle">
+        <input type="checkbox" id="show-disabled" onchange="toggleShowDisabled()">
+        <label for="show-disabled"><?= translate('show_disabled', $i18n) ?></label>
+      </div>
+      <?php } ?>
+
       <div class="sort-container">
         <button class="button secondary-button" value="Sort" onClick="toggleSortOptions()" id="sort-button"
           title="<?= translate('sort', $i18n) ?>">
@@ -289,6 +299,7 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
           </div>
         </div>
       </div>
+
     </div>
   </header>
   <div class="subscriptions<?= $period === 'original' ? ' period-original' : '' ?>" id="subscriptions">

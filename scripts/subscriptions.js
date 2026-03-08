@@ -627,7 +627,7 @@ activeFilters['categories'] = [];
 activeFilters['members'] = [];
 activeFilters['payments'] = [];
 activeFilters['currencies'] = [];
-activeFilters['state'] = "";
+activeFilters['state'] = "0";
 activeFilters['renewalType'] = "";
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -723,7 +723,7 @@ document.querySelectorAll('.filter-item').forEach(function (item) {
     } else if (this.hasAttribute('data-state')) {
       const state = this.getAttribute('data-state');
       if (activeFilters['state'] === state) {
-        activeFilters['state'] = "";
+        activeFilters['state'] = "0";
         this.classList.remove('selected');
       } else {
         activeFilters['state'] = state;
@@ -731,6 +731,10 @@ document.querySelectorAll('.filter-item').forEach(function (item) {
           sibling.classList.remove('selected');
         });
         this.classList.add('selected');
+      }
+      const showDisabledCheckbox = document.getElementById('show-disabled');
+      if (showDisabledCheckbox) {
+        showDisabledCheckbox.checked = (activeFilters['state'] === "" || activeFilters['state'] === "1");
       }
     } else if (this.hasAttribute('data-renewaltype')) {
       const renewalType = this.getAttribute('data-renewaltype');
@@ -765,14 +769,24 @@ function clearFilters() {
   activeFilters['members'] = [];
   activeFilters['payments'] = [];
   activeFilters['currencies'] = [];
-  activeFilters['state'] = "";
+  activeFilters['state'] = "0";
   activeFilters['renewalType'] = "";
-  
+
   document.querySelectorAll('.filter-item').forEach(function (item) {
     item.classList.remove('selected');
   });
+  const showDisabledCheckbox = document.getElementById('show-disabled');
+  if (showDisabledCheckbox) {
+    showDisabledCheckbox.checked = false;
+  }
   document.querySelector('#clear-filters').classList.add('hide');
   fetchSubscriptions(null, null, "clearfilters");
+}
+
+function toggleShowDisabled() {
+  const checkbox = document.getElementById('show-disabled');
+  activeFilters['state'] = checkbox.checked ? "" : "0";
+  fetchSubscriptions(null, null, "filter");
 }
 
 let currentActions = null;

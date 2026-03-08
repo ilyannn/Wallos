@@ -347,6 +347,7 @@ $i18n = [
     "failed_update_payment" => "Failed to update payment method in the database",
     "enabled" => "enabled",
     "disabled" => "disabled",
+    "show_disabled" => "Disabled",
     // Subscription
     "error_fetching_image" => "Error fetching image",
     "subscription_updated_successfuly" => "Subscription updated successfully",

@@ -339,6 +339,32 @@ button:hover svg .main-color {
   right: -15px;
 }
 
+.show-disabled-toggle {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.show-disabled-toggle label {
+  font-size: 12px;
+  padding-left: 38px;
+}
+
+.show-disabled-toggle label::before {
+  width: 32px;
+  height: 18px;
+  border-radius: 9px;
+}
+
+.show-disabled-toggle label::after {
+  width: 14px;
+  height: 14px;
+}
+
+.show-disabled-toggle input[type="checkbox"]:checked+label::after {
+  transform: translate(14px, -50%);
+}
+
 .subscriptions {
   display: flex;
   flex-direction: column;
