@@ -302,6 +302,12 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
 
     </div>
   </header>
+  <div class="waterline-header" id="waterline-header">
+    <span class="waterline-label"><?= translate('reviewed_until', $i18n) ?></span>
+    <input type="date" class="waterline-date" id="waterline-date"
+           value="<?= htmlspecialchars($settings['reviewed_until'] ?? '') ?>"
+           onchange="updateReviewedUntil(this.value)">
+  </div>
   <div class="subscriptions<?= $period === 'original' ? ' period-original' : '' ?>" id="subscriptions">
     <?php
     // Get main currency for price conversion
@@ -344,6 +350,7 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
       $next_payment_timestamp = strtotime($subscription['next_payment']);
       $formatted_date = $formatter->format($next_payment_timestamp);
       $print[$id]['next_payment'] = $formatted_date;
+      $print[$id]['next_payment_raw'] = $subscription['next_payment'];
       $paymentIconFolder = (strpos($payment_methods[$paymentMethodId]['icon'], 'images/uploads/icons/') !== false) ? "" : "images/uploads/logos/";
       $print[$id]['payment_method_icon'] = $paymentIconFolder . $payment_methods[$paymentMethodId]['icon'];
       $print[$id]['payment_method_name'] = $payment_methods[$paymentMethodId]['name'];
@@ -402,7 +409,7 @@ $headerClass = count($subscriptions) > 0 ? "main-actions" : "main-actions hidden
     }
 
     if (isset($print)) {
-      printSubscriptions($print, $sort, $categories, $members, $i18n, $colorTheme, "", $settings['disabledToBottom'], $settings['mobileNavigation'], $settings['showSubscriptionProgress'], $currencies, $lang);
+      printSubscriptions($print, $sort, $categories, $members, $i18n, $colorTheme, "", $settings['disabledToBottom'], $settings['mobileNavigation'], $settings['showSubscriptionProgress'], $currencies, $lang, $settings['reviewed_until'] ?? null);
     }
     $db->close();
 

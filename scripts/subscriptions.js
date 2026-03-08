@@ -789,6 +789,21 @@ function toggleShowDisabled() {
   fetchSubscriptions(null, null, "filter");
 }
 
+function updateReviewedUntil(dateValue) {
+  fetch('endpoints/settings/reviewed_until.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ value: dateValue || null })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      fetchSubscriptions(null, null, "waterline");
+    }
+  })
+  .catch(error => console.error('Error updating reviewed_until:', error));
+}
+
 let currentActions = null;
 
 document.addEventListener('click', function (event) {

@@ -348,6 +348,7 @@ $i18n = [
     "enabled" => "enabled",
     "disabled" => "disabled",
     "show_disabled" => "Disabled",
+    "reviewed_until" => "Reviewed until",
     // Subscription
     "error_fetching_image" => "Error fetching image",
     "subscription_updated_successfuly" => "Subscription updated successfully",

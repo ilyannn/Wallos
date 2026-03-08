@@ -147,7 +147,7 @@ function formatDate($date, $lang = 'en')
     return $formattedDate;
 }
 
-function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n, $colorTheme, $imagePath, $disabledToBottom, $mobileNavigation, $showSubscriptionProgress, $currencies, $lang)
+function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n, $colorTheme, $imagePath, $disabledToBottom, $mobileNavigation, $showSubscriptionProgress, $currencies, $lang, $reviewedUntil = null)
 {
     if ($sort === "price") {
         usort($subscriptions, function ($a, $b) {
@@ -163,6 +163,8 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
     $currentCategory = 0;
     $currentPayerUserId = 0;
     $currentPaymentMethodId = 0;
+    $waterlinePrinted = false;
+    $hasReviewedSubs = false;
     foreach ($subscriptions as $subscription) {
         if ($sort == "category_id" && $subscription['category_id'] != $currentCategory) {
             ?>
@@ -202,6 +204,18 @@ function printSubscriptions($subscriptions, $sort, $categories, $members, $i18n,
             }
             if ($subscription['auto_renew'] != 1) {
                 $subscriptionExtraClasses .= " manual";
+            }
+            $isReviewed = false;
+            if ($reviewedUntil !== null
+                && isset($subscription['next_payment_raw'])
+                && $subscription['next_payment_raw'] <= $reviewedUntil) {
+                $subscriptionExtraClasses .= " reviewed";
+                $isReviewed = true;
+                $hasReviewedSubs = true;
+            }
+            if (!$waterlinePrinted && $hasReviewedSubs && !$isReviewed) {
+                $waterlinePrinted = true;
+                ?><div class="waterline-divider"></div><?php
             }
         ?>
         <div class="subscription-container<?= $subscriptionExtraClasses ?>">

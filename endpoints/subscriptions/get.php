@@ -218,6 +218,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     $next_payment_timestamp = strtotime($subscription['next_payment']);
     $formatted_date = $formatter->format($next_payment_timestamp);
     $print[$id]['next_payment'] = $formatted_date;
+    $print[$id]['next_payment_raw'] = $subscription['next_payment'];
     $print[$id]['auto_renew'] = $subscription['auto_renew'];
     $paymentIconFolder = (strpos($payment_methods[$paymentMethodId]['icon'], 'images/uploads/icons/') !== false) ? "" : "images/uploads/logos/";
     $print[$id]['payment_method_icon'] = $paymentIconFolder . $payment_methods[$paymentMethodId]['icon'];
@@ -287,7 +288,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
   }
 
   if (isset($print)) {
-    printSubscriptions($print, $sort, $categories, $members, $i18n, $colorTheme, "../../", $settings['disabledToBottom'], $settings['mobileNavigation'], $settings['showSubscriptionProgress'], $currencies, $lang);
+    printSubscriptions($print, $sort, $categories, $members, $i18n, $colorTheme, "../../", $settings['disabledToBottom'], $settings['mobileNavigation'], $settings['showSubscriptionProgress'], $currencies, $lang, $settings['reviewed_until'] ?? null);
   }
 
   if (count($subscriptions) == 0) {
