@@ -1365,6 +1365,7 @@ input[type="email"],
 input[type="password"],
 input[type="date"],
 input[type="number"],
+textarea,
 select {
   width: 100%;
   padding: 0px 15px;
@@ -1393,6 +1394,15 @@ input[type="color"] {
 
 .one-third {
   max-width: 33%;
+}
+
+textarea {
+  resize: vertical;
+  height: 72px;
+  min-height: 72px;
+  max-height: 200px;
+  padding-top: 12px;
+  vertical-align: top;
 }
 
 select {
